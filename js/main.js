@@ -63,6 +63,7 @@ function genPTT(){
     var widths = getWidths(arr);
     var str = "";
     var i, j, k, m, entry, row, pseudoRows, plen;
+    var typeOption = document.getElementById('type').value;
 
     // top
     str += generateSeparationLine(widths, style, 'top_left', 'top_center', 'top_right');
@@ -102,8 +103,7 @@ function genPTT(){
             str += '\n';
         }
 
-
-        if (k < arr.length-1) {
+        if (('grid' == typeOption && k < arr.length-1) || ('header' == typeOption && k == 0)) {
             str += generateSeparationLine(widths, style, 'middle_left', 'middle_center', 'middle_right');
         }
     }
