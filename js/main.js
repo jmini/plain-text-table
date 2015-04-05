@@ -114,7 +114,38 @@ function genPTT(){
 }
 
 function extractData(){
-    return $('#table-wrapper').handsontable('getData');
+    var spacePadding = document.getElementById("spacePadding").checked
+    var item, entry, r;
+    var result = [];
+    var arr = $('#table-wrapper').handsontable('getData');
+    for(i = 0; i < arr.length; i++) {
+        result.push([]);
+        for (j = 0; j < arr[i].length; j++) {
+            item = arr[i][j];
+            if (! item) {
+                result[i][j] = '';
+            } else if(spacePadding) {
+                r = '';
+                entry = item.split('\n');
+                for (k = 0; k < entry.length; k++) {
+                    if(k > 0) {
+                        r += '\n';
+                    }
+                    if(entry[k].indexOf(' ', 0) !== 0) {
+                        r += ' ';
+                    }
+                    r += entry[k];
+                    if(entry[k].indexOf(' ', entry[k].length - 1) === -1) {
+                        r += ' ';
+                    }
+                }
+                result[i][j] = r;
+            } else {
+                result[i][j] = item;
+            }
+        }
+    }
+    return result;
 }
 
 function getWidths(arr){
