@@ -58,9 +58,10 @@ function genPTT(){
             bottom_right: '┘'
         }
     }
+    var spacePadding = document.getElementById("spacePadding").checked
 
-    var data = extractData();
-    var widths = getWidths(data);
+    var data = extractData(spacePadding);
+    var widths = getWidths(data, spacePadding);
     var str = "";
     var i, j, k, m, entry, row, pseudoRows, plen;
     var typeOption = document.getElementById('type').value;
@@ -114,7 +115,7 @@ function genPTT(){
     $('#ptt-wrapper').text(str);
 }
 
-function extractData(){
+function extractData(spacePadding){
     var item, lines, w;
     var result = [];
     var arr = $('#table-wrapper').handsontable('getData');
@@ -128,6 +129,14 @@ function extractData(){
                 w = 0;
                 lines = item.split('\n');
                 for (k = 0; k < lines.length; k++) {
+                    if(spacePadding) {
+                        if(lines[k].indexOf(' ', 0) !== 0) {
+                            lines[k] = ' ' + lines[k];
+                        }
+                        if(lines[k].indexOf(' ', lines[k].length - 1) === -1) {
+                            lines[k] = lines[k] + ' ';
+                        }
+                    }
                     if (lines[k].length > w) {
                         w = lines[k].length;
                     }
@@ -139,7 +148,7 @@ function extractData(){
     return {arr: result, vLen: i, hLen: j};
 }
 
-function getWidths(data){
+function getWidths(data, spacePadding){
     var widths = [];
     var i, j, w, item;
     var hasContent = false;
@@ -155,6 +164,9 @@ function getWidths(data){
             }
         }
         if(hasContent || w > 0) {
+            if(spacePadding && w == 0) {
+                w = 1;
+            }
             widths[j] = w;
             hasContent = true;
         }
