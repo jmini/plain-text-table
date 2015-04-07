@@ -59,8 +59,8 @@ function genPTT(){
         }
     }
 
-    var arr = extractData();
-    var widths = getWidths(arr);
+    var data = extractData();
+    var widths = getWidths(data);
     var str = "";
     var i, j, k, m, entry, row, pseudoRows, plen;
     var typeOption = document.getElementById('type').value;
@@ -69,6 +69,7 @@ function genPTT(){
     str += generateSeparationLine(widths, style, 'top_left', 'top_center', 'top_right');
 
     // rows
+    var arr = data['arr'];
     for (k = 0; k < arr.length; k++) {
 
         row = arr[k];
@@ -76,8 +77,8 @@ function genPTT(){
 
         for (i = 0; i < widths.length; i++) {
             entry = arr[k][i];
-            if (! entry) continue;
-            entry = entry.split('\n');
+            if (entry['empty']) continue;
+            entry = entry['pseudoRows'];
             plen = pseudoRows.length;
             for (j = 0; j < entry.length - plen; j++) {
                 pseudoRows.push([]);
@@ -114,8 +115,7 @@ function genPTT(){
 }
 
 function extractData(){
-    var spacePadding = document.getElementById("spacePadding").checked
-    var item, entry, r;
+    var item, lines, w;
     var result = [];
     var arr = $('#table-wrapper').handsontable('getData');
     for(i = 0; i < arr.length; i++) {
@@ -123,47 +123,40 @@ function extractData(){
         for (j = 0; j < arr[i].length; j++) {
             item = arr[i][j];
             if (! item) {
-                result[i][j] = '';
-            } else if(spacePadding) {
-                r = '';
-                entry = item.split('\n');
-                for (k = 0; k < entry.length; k++) {
-                    if(k > 0) {
-                        r += '\n';
-                    }
-                    if(entry[k].indexOf(' ', 0) !== 0) {
-                        r += ' ';
-                    }
-                    r += entry[k];
-                    if(entry[k].indexOf(' ', entry[k].length - 1) === -1) {
-                        r += ' ';
+                result[i][j] = {empty: true};
+            } else {
+                w = 0;
+                lines = item.split('\n');
+                for (k = 0; k < lines.length; k++) {
+                    if (lines[k].length > w) {
+                        w = lines[k].length;
                     }
                 }
-                result[i][j] = r;
-            } else {
-                result[i][j] = item;
+                result[i][j] = {empty: false, pseudoRows: lines, maxWidth: w};
             }
         }
     }
-    return result;
+    return {arr: result, vLen: i, hLen: j};
 }
 
-function getWidths(arr){
+function getWidths(data){
     var widths = [];
-    var i, j, k, w, item, lines;
+    var i, j, w, item;
+    var hasContent = false;
 
-    for(i = 0; i < arr.length; i++) {
-        for (j = 0; j < arr[i].length; j++) {
-            w = widths[j] || 0;
-            item = arr[i][j];
-            if (! item) continue;
-            lines = item.split('\n');
-            for (k = 0; k < lines.length; k++) {
-                if (lines[k].length > w) {
-                    w = lines[k].length;
+    for (j = data['hLen'] - 1; j >= 0; j--) {
+        w = 0;
+        for(i = 0; i < data['vLen']; i++) {
+            item = data['arr'][i][j];
+            if (!item['empty']) {
+                if (item['maxWidth'] > w) {
+                    w = item['maxWidth'];
                 }
             }
+        }
+        if(hasContent || w > 0) {
             widths[j] = w;
+            hasContent = true;
         }
     }
     return widths;
