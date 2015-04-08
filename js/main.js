@@ -65,7 +65,7 @@ function genPTT(){
     var widths = getWidths(data, spacePadding);
     var heights = getHeights(data, spacePadding);
     var str = "";
-    var i, j, k, m, entry, item, offsets;
+    var i, j, k, m, entry, item, offsets, end;
     var typeOption = document.getElementById('type').value;
 
     // top
@@ -93,8 +93,19 @@ function genPTT(){
                 } else {
                     entry = item['pseudoRows'][m + offsets[j]] || '';
                 }
+                if('right' == data['arr'][i][j]['hAlign']) {
+                    end = widths[j] - entry.length;
+                } else if ('center' == data['arr'][i][j]['hAlign']) {
+                    end = Math.floor((widths[j] - entry.length) / 2);
+                } else {
+                    end = 0;
+                }
+                for (k = 0; k < end; k++) {
+                    str += ' ';
+                }
                 str += entry;
-                for (k = entry.length; k < widths[j]; k++) {
+                end = widths[j] - entry.length - end;
+                for (k = 0; k < end; k++) {
                     str += ' ';
                 }
                 if (j < widths.length-1) {
@@ -105,7 +116,7 @@ function genPTT(){
             str += '\n';
         }
 
-        if (('grid' == typeOption && i < heights.length-1) || ('header' == typeOption && i == 0)) {
+        if (('grid' == typeOption && i < heights.length-1) || ('header' == typeOption && i == 0 && i < heights.length-1)) {
             str += generateSeparationLine(widths, style, 'middle_left', 'middle_center', 'middle_right');
         }
     }
