@@ -5,7 +5,8 @@
         $("#table-wrapper").handsontable({
             colHeaders: false,
             contextMenu: true,
-            afterChange: genPTT
+            afterChange: genPTT,
+            afterSetCellMeta: genPTT
         });
     }
 
@@ -74,7 +75,13 @@ function genPTT(){
     for (i = 0; i < heights.length; i++) {
         offsets = [];
         for (j = 0; j < widths.length; j++) {
-            offsets[j] = 0;
+            if('bottom' == data['arr'][i][j]['vAlign']) {
+                offsets[j] = data['arr'][i][j]['pseudoRows'].length - heights[i];
+            } else if ('middle' == data['arr'][i][j]['vAlign']) {
+                offsets[j] = Math.ceil((data['arr'][i][j]['pseudoRows'].length - heights[i]) / 2);
+            } else {
+                offsets[j] = 0;
+            }
         }
 
         for (m = 0; m < heights[i]; m++) {
@@ -109,9 +116,10 @@ function genPTT(){
 }
 
 function extractData(spacePadding){
-    var item, lines, w;
+    var item, lines, w, meta, vAlign, hAlign;
     var result = [];
-    var arr = $('#table-wrapper').handsontable('getData');
+    var table = $('#table-wrapper');
+    var arr = table.handsontable('getData');
     for(i = 0; i < arr.length; i++) {
         result.push([]);
         for (j = 0; j < arr[i].length; j++) {
@@ -134,7 +142,24 @@ function extractData(spacePadding){
                         w = lines[k].length;
                     }
                 }
-                result[i][j] = {empty: false, pseudoRows: lines, maxWidth: w};
+                meta = table.handsontable('getCellMeta', i, j);
+                hAlign = 'left';
+                vAlign = 'top';
+                if(meta['className']) {
+                    if(meta['className'].indexOf('htCenter') > -1) {
+                        hAlign = 'center';
+                    } else if(meta['className'].indexOf('htRight') > -1) {
+                        hAlign = 'right';
+                    } else if(meta['className'].indexOf('htJustify') > -1) {
+                        hAlign = 'justify';
+                    }
+                    if(meta['className'].indexOf('htMiddle') > -1) {
+                        vAlign = 'middle';
+                    } else if(meta['className'].indexOf('htBottom') > -1) {
+                        vAlign = 'bottom';
+                    }
+                }
+                result[i][j] = {empty: false, pseudoRows: lines, maxWidth: w, vAlign: vAlign, hAlign: hAlign};
             }
         }
     }
