@@ -62,6 +62,7 @@ function genPTT(){
 
     var data = extractData(spacePadding);
     var widths = getWidths(data, spacePadding);
+    var heights = getHeights(data, spacePadding);
     var str = "";
     var i, j, k, m, entry, row, pseudoRows, plen;
     var typeOption = document.getElementById('type').value;
@@ -70,14 +71,13 @@ function genPTT(){
     str += generateSeparationLine(widths, style, 'top_left', 'top_center', 'top_right');
 
     // rows
-    var arr = data['arr'];
-    for (k = 0; k < arr.length; k++) {
+    for (k = 0; k < heights.length; k++) {
 
-        row = arr[k];
+        row = data['arr'][k];
         pseudoRows = [];
 
         for (i = 0; i < widths.length; i++) {
-            entry = arr[k][i];
+            entry = data['arr'][k][i];
             if (entry['empty']) continue;
             entry = entry['pseudoRows'];
             plen = pseudoRows.length;
@@ -105,7 +105,7 @@ function genPTT(){
             str += '\n';
         }
 
-        if (('grid' == typeOption && k < arr.length-1) || ('header' == typeOption && k == 0)) {
+        if (('grid' == typeOption && k < heights.length-1) || ('header' == typeOption && k == 0)) {
             str += generateSeparationLine(widths, style, 'middle_left', 'middle_center', 'middle_right');
         }
     }
@@ -155,7 +155,7 @@ function getWidths(data, spacePadding){
 
     for (j = data['hLen'] - 1; j >= 0; j--) {
         w = 0;
-        for(i = 0; i < data['vLen']; i++) {
+        for (i = 0; i < data['vLen']; i++) {
             item = data['arr'][i][j];
             if (!item['empty']) {
                 if (item['maxWidth'] > w) {
@@ -172,6 +172,32 @@ function getWidths(data, spacePadding){
         }
     }
     return widths;
+}
+
+function getHeights(data, spacePadding){
+    var heights = [];
+    var i, j, h, item;
+    var hasContent = false;
+
+    for (i = data['vLen'] - 1; i >= 0; i--) {
+        h = 0;
+        for (j = 0; j < data['hLen']; j++) {
+            item = data['arr'][i][j];
+            if (!item['empty']) {
+                if (item['pseudoRows'].length > h) {
+                    h = item['pseudoRows'].length;
+                }
+            }
+        }
+        if(hasContent || h > 0) {
+            if(spacePadding && h == 0) {
+                h = 1;
+            }
+            heights[i] = h;
+            hasContent = true;
+        }
+    }
+    return heights;
 }
 
 function generateSeparationLine(widths, style, leftKey, centerKey, rightKey){
