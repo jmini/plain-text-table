@@ -64,40 +64,33 @@ function genPTT(){
     var widths = getWidths(data, spacePadding);
     var heights = getHeights(data, spacePadding);
     var str = "";
-    var i, j, k, m, entry, row, pseudoRows, plen;
+    var i, j, k, m, entry, item, offsets;
     var typeOption = document.getElementById('type').value;
 
     // top
     str += generateSeparationLine(widths, style, 'top_left', 'top_center', 'top_right');
 
     // rows
-    for (k = 0; k < heights.length; k++) {
-
-        row = data['arr'][k];
-        pseudoRows = [];
-
-        for (i = 0; i < widths.length; i++) {
-            entry = data['arr'][k][i];
-            if (entry['empty']) continue;
-            entry = entry['pseudoRows'];
-            plen = pseudoRows.length;
-            for (j = 0; j < entry.length - plen; j++) {
-                pseudoRows.push([]);
-            }
-            for (j = 0; j < entry.length; j++) {
-                pseudoRows[j][i] = entry[j];
-            }
+    for (i = 0; i < heights.length; i++) {
+        offsets = [];
+        for (j = 0; j < widths.length; j++) {
+            offsets[j] = 0;
         }
 
-        for (m = 0; m < pseudoRows.length; m++) {
+        for (m = 0; m < heights[i]; m++) {
             str += style['vertical'];
-            for (i = 0; i < widths.length; i++) {
-                entry = pseudoRows[m][i] || '';
+            for (j = 0; j < widths.length; j++) {
+                item = data['arr'][i][j];
+                if(item['empty']) {
+                    entry = '';
+                } else {
+                    entry = item['pseudoRows'][m + offsets[j]] || '';
+                }
                 str += entry;
-                for (j = entry.length; j < widths[i]; j++) {
+                for (k = entry.length; k < widths[j]; k++) {
                     str += ' ';
                 }
-                if (i < widths.length-1) {
+                if (j < widths.length-1) {
                     str += style['vertical'];
                 }
             }
@@ -105,7 +98,7 @@ function genPTT(){
             str += '\n';
         }
 
-        if (('grid' == typeOption && k < heights.length-1) || ('header' == typeOption && k == 0)) {
+        if (('grid' == typeOption && i < heights.length-1) || ('header' == typeOption && i == 0)) {
             str += generateSeparationLine(widths, style, 'middle_left', 'middle_center', 'middle_right');
         }
     }
