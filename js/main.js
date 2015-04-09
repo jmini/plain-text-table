@@ -61,8 +61,10 @@ function genPTT(){
     }
     var spacePadding = document.getElementById("spacePadding").checked;
     var highlight = document.getElementById("highlight").value;
+    var horizontalHeader = document.getElementById("horizontal_header").value;
+    var verticalHeader = document.getElementById("vertical_header").value;
 
-    var data = extractData(spacePadding);
+    var data = extractData(spacePadding, horizontalHeader, verticalHeader);
     var widths = getWidths(data, spacePadding);
     var heights = getHeights(data, spacePadding);
     var str = "";
@@ -70,9 +72,7 @@ function genPTT(){
     var typeOption = document.getElementById('type').value;
 
     // top
-    str += openHighlighted(highlight, "horizontal_top_border");
-    str += generateSeparationLine(widths, highlight, style.top_left, style.top_center, style.top_right, style.horizontal);
-    str += closeHighlighted(highlight, "horizontal_top_border");
+    str += generateSeparationLine(widths, highlight, "horizontal_top_border", style.top_left, style.top_center, style.top_right, style.horizontal);
 
     // rows
     for (i = 0; i < heights.length; i++) {
@@ -125,36 +125,49 @@ function genPTT(){
             str += '\n';
         }
 
-        if ('header' == typeOption && i == 0 && heights.length > 0) {
-            str += openHighlighted(highlight, "horizontal_inner_header_border");
-            str += generateSeparationLine(widths, highlight, style.middle_left, style.middle_center, style.middle_right, style.horizontal);
-            str += closeHighlighted(highlight, "horizontal_inner_header_border");
-        }
-        if ('grid' == typeOption && i < heights.length - 1) {
-            str += openHighlighted(highlight, "horizontal_inner_border");
-            str += generateSeparationLine(widths, highlight, style.middle_left, style.middle_center, style.middle_right, style.horizontal);
-            str += closeHighlighted(highlight, "horizontal_inner_border");
+        if ('none' != horizontalHeader && i == 0 && heights.length > 0) {
+            str += generateSeparationLine(widths, highlight, "horizontal_inner_header_border", style.middle_left, style.middle_center, style.middle_right, style.horizontal);
+        } else if('grid' == typeOption && i < heights.length - 1) {
+            str += generateSeparationLine(widths, highlight, "horizontal_inner_border", style.middle_left, style.middle_center, style.middle_right, style.horizontal);
         }
     }
 
     // bottom
-    str += openHighlighted(highlight, "horizontal_bottom_border");
-    str += generateSeparationLine(widths, highlight, style.bottom_left, style.bottom_center, style.bottom_right, style.horizontal);
-    str += closeHighlighted(highlight, "horizontal_bottom_border");
+    str += generateSeparationLine(widths, highlight, "horizontal_bottom_border", style.bottom_left, style.bottom_center, style.bottom_right, style.horizontal);
     $('#ptt-wrapper').html(str);
 }
 
-function extractData(spacePadding){
-    var i, j, k, item, lines, w, meta, vAlign, hAlign;
+function extractData(spacePadding, horizontalHeader, verticalHeader){
+    var i, j, k, item, lines, w, meta, vAlign, hAlign, vLen, hLen;
     var result = [];
     var table = $('#table-wrapper');
     var arr = table.handsontable('getData');
+    var iOffset = 0;
+    var jOffset = 0;
     for(i = 0; i < arr.length; i++) {
+        if(i == 0 && ('number' == horizontalHeader || 'letter' == horizontalHeader)) {
+            result.push([]);
+            if('number' == verticalHeader || 'letter' == verticalHeader) {
+                //add an empty item that will be replaced later:
+                result[0][0] = {empty: true};
+                jOffset = 1;
+            }
+            for (j = 0; j < arr[i].length; j++) {
+                //add an empty item that will be replaced later:
+                result[0][j + jOffset] = {empty: true};
+            }
+            iOffset = 1;
+        }
         result.push([]);
+        if('number' == verticalHeader || 'letter' == verticalHeader) {
+            //add an empty item that will be replaced later:
+            result[i + iOffset][0] = {empty: true};
+            jOffset = 1;
+        }
         for (j = 0; j < arr[i].length; j++) {
             item = arr[i][j];
             if (! item) {
-                result[i][j] = {empty: true};
+                result[i + iOffset][j + jOffset] = {empty: true};
             } else {
                 w = 0;
                 lines = item.split('\n');
@@ -188,20 +201,85 @@ function extractData(spacePadding){
                         vAlign = 'bottom';
                     }
                 }
-                result[i][j] = {empty: false, pseudoRows: lines, maxWidth: w, vAlign: vAlign, hAlign: hAlign};
+                result[i + iOffset][j + jOffset] = {empty: false, pseudoRows: lines, maxWidth: w, vAlign: vAlign, hAlign: hAlign};
             }
         }
     }
-    return {arr: result, vLen: i, hLen: j};
+    vLen = getVLen(result, (i + iOffset - 1), (j + jOffset - 1));
+    hLen = getHLen(result, (i + iOffset - 1), (j + jOffset - 1));
+    if('number' == horizontalHeader || 'letter' == horizontalHeader) {
+        for (j = 0; j < hLen - jOffset; j++) {
+            result[0][j + jOffset] = generateHeader(horizontalHeader, spacePadding, j);
+        }
+    }
+    if('number' == verticalHeader || 'letter' == verticalHeader) {
+        for (i = 0; i < vLen - iOffset; i++) {
+            result[i + iOffset][0] = generateHeader(verticalHeader, spacePadding, i);
+        }
+    }
+    return {arr: result, vLen: vLen, hLen: hLen};
+}
+
+function getVLen(arr, vMax, hMax){
+    var i, j, item;
+
+    for (i = vMax; i >= 0; i--) {
+        for (j = 0; j <= hMax; j++) {
+            item = arr[i][j];
+            if (!item.empty) {
+                return i + 1;
+            }
+        }
+    }
+    return 0;
+}
+
+function getHLen(arr, vMax, hMax){
+    var i, j, item;
+
+    for (j = hMax; j >= 0; j--) {
+        for (i = 0; i <= vMax; i++) {
+            item = arr[i][j];
+            if (!item.empty) {
+                return j + 1;
+            }
+        }
+    }
+    return 0;
+}
+
+function generateHeader(headerType, spacePadding, id) {
+    var str = "";
+    var num, s;
+    if (spacePadding) {
+        str += ' ';
+    }
+    if('letter' == headerType) {
+        s = '';
+        num = id;
+        do {
+            s = String.fromCharCode(65 + (num % 26)) + s;
+            num = Math.floor(num / 26) - 1;
+        } while(num > -1);
+        str += s;
+    } else {
+        str += (id + 1).toString();
+    }
+    if (spacePadding) {
+        str += ' ';
+    }
+    return {empty: false, pseudoRows: [str], maxWidth: str.length, vAlign: 'middle', hAlign: 'center'};
 }
 
 function getWidths(data, spacePadding){
     var widths = [];
     var i, j, w, item;
-    var hasContent = false;
 
-    for (j = data.hLen - 1; j >= 0; j--) {
+    for (j = 0; j < data.hLen; j++) {
         w = 0;
+        if(spacePadding) {
+            w = 1;
+        }
         for (i = 0; i < data.vLen; i++) {
             item = data.arr[i][j];
             if (!item.empty) {
@@ -210,13 +288,7 @@ function getWidths(data, spacePadding){
                 }
             }
         }
-        if(hasContent || w > 0) {
-            if(spacePadding && w == 0) {
-                w = 1;
-            }
-            widths[j] = w;
-            hasContent = true;
-        }
+        widths[j] = w;
     }
     return widths;
 }
@@ -224,10 +296,12 @@ function getWidths(data, spacePadding){
 function getHeights(data, spacePadding){
     var heights = [];
     var i, j, h, item;
-    var hasContent = false;
 
-    for (i = data.vLen - 1; i >= 0; i--) {
+    for (i = 0; i < data.vLen; i++) {
         h = 0;
+        if(spacePadding) {
+            h = 1;
+        }
         for (j = 0; j < data.hLen; j++) {
             item = data.arr[i][j];
             if (!item.empty) {
@@ -236,20 +310,15 @@ function getHeights(data, spacePadding){
                 }
             }
         }
-        if(hasContent || h > 0) {
-            if(spacePadding && h == 0) {
-                h = 1;
-            }
-            heights[i] = h;
-            hasContent = true;
-        }
+        heights[i] = h;
     }
     return heights;
 }
 
-function generateSeparationLine(widths, highlight, leftChar, centerChar, rightChar, horizontalChar){
+function generateSeparationLine(widths, highlight, horizontalLineMarker, leftChar, centerChar, rightChar, horizontalChar){
     var i, j;
     var str = "";
+    str += openHighlighted(highlight, horizontalLineMarker);
     str += openHighlighted(highlight, "vertical_left_border");
     str += leftChar;
     str += closeHighlighted(highlight, "vertical_left_border");
@@ -266,6 +335,7 @@ function generateSeparationLine(widths, highlight, leftChar, centerChar, rightCh
     str += openHighlighted(highlight, "vertical_right_border");
     str += rightChar;
     str += closeHighlighted(highlight, "vertical_right_border");
+    str += closeHighlighted(highlight, horizontalLineMarker);
     str += '\n';
     return str;
 }
