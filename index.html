@@ -76,13 +76,19 @@
             <br>
             <p>Type: <select id="type" name="type" onchange="genPTT();">
               <option value="grid">Grid</option>
+              <option value="grid_header">Grid with header (first line)</option>
               <option value="header">Header (first line)</option>
+              <option value="compact">Compact</option>
               <option value="columns">Columns only</option>
             </select></p>
             <p>Style: <select id="style" name="style" onchange="genPTT();">
               <option value="simple">Single border</option>
               <option value="double">Double border</option>
-              <option value="ascii">ASCII characters</option>
+              <option value="mixed">Mixed border</option>
+              <option value="ascii_single">ASCII single border</option>
+              <option value="ascii_mixed">ASCII mixed border</option>
+              <option value="ascii_column">ASCII column only border</option>
+              <option value="ascii_light">ASCII light border</option>
             </select></p>
             <p><input type="checkbox" id="spacePadding" checked="checked" onclick="genPTT();"> Ensure a padding of one space in each cell.</input></p>
             <pre id="ptt-wrapper"></pre>

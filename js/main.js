@@ -18,45 +18,113 @@ function genPTT(){
     var styleOption = document.getElementById('style').value;
     if('double' == styleOption) {
         style = {
-            horizontal: '═',
-            vertical: '║',
+            vertical_left: '║',
+            vertical_middle: '║',
+            vertical_right: '║',
             top_left: '╔',
             top_center: '╦',
             top_right: '╗',
+            top_horizontal: '═',
+            firstmiddle_left: '╠',
+            firstmiddle_center: '╬',
+            firstmiddle_right: '╣',
+            firstmiddle_horizontal: '═',
             middle_left: '╠',
             middle_center: '╬',
             middle_right: '╣',
+            middle_horizontal: '═',
             bottom_left: '╚',
             bottom_center: '╩',
-            bottom_right: '╝'
+            bottom_right: '╝',
+            bottom_horizontal: '═'
         };
-    } else if('ascii' == styleOption) {
+    } else if('mixed' == styleOption) {
         style = {
-            horizontal: '-',
-            vertical: '|',
+            vertical_left: '║',
+            vertical_middle: '│',
+            vertical_right: '║',
+            top_left: '╔',
+            top_center: '╤',
+            top_right: '╗',
+            top_horizontal: '═',
+            firstmiddle_left: '╠',
+            firstmiddle_center: '╬',
+            firstmiddle_right: '╣',
+            firstmiddle_horizontal: '═',
+            middle_left: '╟',
+            middle_center: '┼',
+            middle_right: '╢',
+            middle_horizontal: '─',
+            bottom_left: '╚',
+            bottom_center: '╧',
+            bottom_right: '╝',
+            bottom_horizontal: '═'
+        };
+    } else if('ascii_single' == styleOption) {
+        style = {
+            vertical_left: '|',
+            vertical_middle: '|',
+            vertical_right: '|',
             top_left: '+',
             top_center: '+',
             top_right: '+',
+            top_horizontal: '-',
+            firstmiddle_left: '+',
+            firstmiddle_center: '+',
+            firstmiddle_right: '+',
+            firstmiddle_horizontal: '-',
             middle_left: '+',
             middle_center: '+',
             middle_right: '+',
+            middle_horizontal: '-',
             bottom_left: '+',
             bottom_center: '+',
-            bottom_right: '+'
+            bottom_right: '+',
+            bottom_horizontal: '-'
+        };
+    } else if('ascii_mixed' == styleOption) {
+        style = {
+            vertical_left: '|',
+            vertical_middle: '|',
+            vertical_right: '|',
+            top_left: '+',
+            top_center: '+',
+            top_right: '+',
+            top_horizontal: '=',
+            firstmiddle_left: '+',
+            firstmiddle_center: '+',
+            firstmiddle_right: '+',
+            firstmiddle_horizontal: '=',
+            middle_left: '+',
+            middle_center: '+',
+            middle_right: '+',
+            middle_horizontal: '-',
+            bottom_left: '+',
+            bottom_center: '+',
+            bottom_right: '+',
+            bottom_horizontal: '='
         };
     } else {
         style = {
-            horizontal: '─',
-            vertical: '│',
+            vertical_left: '│',
+            vertical_middle: '│',
+            vertical_right: '│',
             top_left: '┌',
             top_center: '┬',
             top_right: '┐',
+            top_horizontal: '─',
+            firstmiddle_left: '├',
+            firstmiddle_center: '┼',
+            firstmiddle_right: '┤',
+            firstmiddle_horizontal: '─',
             middle_left: '├',
             middle_center: '┼',
             middle_right: '┤',
+            middle_horizontal: '─',
             bottom_left: '└',
             bottom_center: '┴',
-            bottom_right: '┘'
+            bottom_right: '┘',
+            bottom_horizontal: '─'
         };
     }
     var spacePadding = document.getElementById("spacePadding").checked;
