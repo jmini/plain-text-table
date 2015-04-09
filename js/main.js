@@ -60,6 +60,7 @@ function genPTT(){
         };
     }
     var spacePadding = document.getElementById("spacePadding").checked;
+    var highlight = document.getElementById("highlight").value;
 
     var data = extractData(spacePadding);
     var widths = getWidths(data, spacePadding);
@@ -69,7 +70,9 @@ function genPTT(){
     var typeOption = document.getElementById('type').value;
 
     // top
-    str += generateSeparationLine(widths, style, 'top_left', 'top_center', 'top_right');
+    str += openHighlighted(highlight, "horizontal_top_border");
+    str += generateSeparationLine(widths, highlight, style.top_left, style.top_center, style.top_right, style.horizontal);
+    str += closeHighlighted(highlight, "horizontal_top_border");
 
     // rows
     for (i = 0; i < heights.length; i++) {
@@ -85,7 +88,9 @@ function genPTT(){
         }
 
         for (m = 0; m < heights[i]; m++) {
+            str += openHighlighted(highlight, "vertical_left_border");
             str += style.vertical;
+            str += closeHighlighted(highlight, "vertical_left_border");
             for (j = 0; j < widths.length; j++) {
                 item = data.arr[i][j];
                 if(item.empty) {
@@ -109,21 +114,34 @@ function genPTT(){
                     str += ' ';
                 }
                 if (j < widths.length-1) {
+                    str += openHighlighted(highlight, "vertical_inner_border");
                     str += style.vertical;
+                    str += closeHighlighted(highlight, "vertical_inner_border");
                 }
             }
+            str += openHighlighted(highlight, "vertical_right_border");
             str += style.vertical;
+            str += closeHighlighted(highlight, "vertical_right_border");
             str += '\n';
         }
 
-        if (('grid' == typeOption && i < heights.length-1) || ('header' == typeOption && i == 0 && i < heights.length-1)) {
-            str += generateSeparationLine(widths, style, 'middle_left', 'middle_center', 'middle_right');
+        if ('header' == typeOption && i == 0 && heights.length > 0) {
+            str += openHighlighted(highlight, "horizontal_inner_header_border");
+            str += generateSeparationLine(widths, highlight, style.middle_left, style.middle_center, style.middle_right, style.horizontal);
+            str += closeHighlighted(highlight, "horizontal_inner_header_border");
+        }
+        if ('grid' == typeOption && i < heights.length - 1) {
+            str += openHighlighted(highlight, "horizontal_inner_border");
+            str += generateSeparationLine(widths, highlight, style.middle_left, style.middle_center, style.middle_right, style.horizontal);
+            str += closeHighlighted(highlight, "horizontal_inner_border");
         }
     }
 
     // bottom
-    str += generateSeparationLine(widths, style, 'bottom_left', 'bottom_center', 'bottom_right');
-    $('#ptt-wrapper').text(str);
+    str += openHighlighted(highlight, "horizontal_bottom_border");
+    str += generateSeparationLine(widths, highlight, style.bottom_left, style.bottom_center, style.bottom_right, style.horizontal);
+    str += closeHighlighted(highlight, "horizontal_bottom_border");
+    $('#ptt-wrapper').html(str);
 }
 
 function extractData(spacePadding){
@@ -229,19 +247,42 @@ function getHeights(data, spacePadding){
     return heights;
 }
 
-function generateSeparationLine(widths, style, leftKey, centerKey, rightKey){
+function generateSeparationLine(widths, highlight, leftChar, centerChar, rightChar, horizontalChar){
     var i, j;
     var str = "";
-    str += style[leftKey];
+    str += openHighlighted(highlight, "vertical_left_border");
+    str += leftChar;
+    str += closeHighlighted(highlight, "vertical_left_border");
     for (i = 0; i < widths.length; i++) {
         for (j = 0; j < widths[i]; j++) {
-            str += style.horizontal;
+            str += horizontalChar;
         }
         if (i < widths.length-1) {
-            str += style[centerKey];
+            str += openHighlighted(highlight, "vertical_inner_border");
+            str += centerChar;
+            str += closeHighlighted(highlight, "vertical_inner_border");
         }
     }
-    str += style[rightKey];
+    str += openHighlighted(highlight, "vertical_right_border");
+    str += rightChar;
+    str += closeHighlighted(highlight, "vertical_right_border");
     str += '\n';
     return str;
 }
+
+function openHighlighted(highlight, key){
+    if(key == highlight) {
+        return '<span class="highlighted">';
+    } else {
+        return '';
+    }
+}
+
+function closeHighlighted(highlight, key){
+    if(key == highlight) {
+        return '</span>';
+    } else {
+        return '';
+    }
+}
+
