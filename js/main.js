@@ -14,56 +14,182 @@
 })();
 
 function genPTT(){
-    var style;
-    var styleOption = document.getElementById('style').value;
-    if('double' == styleOption) {
-        style = {
-            horizontal: '═',
-            vertical: '║',
-            top_left: '╔',
-            top_center: '╦',
-            top_right: '╗',
-            middle_left: '╠',
-            middle_center: '╬',
-            middle_right: '╣',
-            bottom_left: '╚',
-            bottom_center: '╩',
-            bottom_right: '╝'
-        };
-    } else if('ascii' == styleOption) {
-        style = {
-            horizontal: '-',
-            vertical: '|',
-            top_left: '+',
-            top_center: '+',
-            top_right: '+',
-            middle_left: '+',
-            middle_center: '+',
-            middle_right: '+',
-            bottom_left: '+',
-            bottom_center: '+',
-            bottom_right: '+'
-        };
-    } else {
-        style = {
-            horizontal: '─',
-            vertical: '│',
-            top_left: '┌',
-            top_center: '┬',
-            top_right: '┐',
-            middle_left: '├',
-            middle_center: '┼',
-            middle_right: '┤',
-            bottom_left: '└',
-            bottom_center: '┴',
-            bottom_right: '┘'
-        };
-    }
+    var unicode = {
+        none: {
+            none: {
+                none: {
+                    none: ' ',
+                    simple: ' ',
+                    double: 'X'
+                },
+                simple: {
+                    none: ' ',
+                    simple: '┐',
+                    double: '╕'
+                },
+                double: {
+                    none: ' ',
+                    simple: '╖',
+                    double: '╗'
+                },
+            },
+            simple: {
+                none: {
+                    none: ' ',
+                    simple: '─',
+                    double: 'X'
+                },
+                simple: {
+                    none: '┌',
+                    simple: '┬',
+                    double: 'Z'
+                },
+                double: {
+                    none: '╓',
+                    simple: '╥',
+                    double: 'X'
+                },
+            },
+            double: {
+                none: {
+                    none: ' ',
+                    simple: 'X',
+                    double: '═'
+                },
+                simple: {
+                    none: '╒',
+                    simple: 'X',
+                    double: '╤'
+                },
+                double: {
+                    none: '╔',
+                    simple: 'X',
+                    double: '╦'
+                },
+            },
+        },
+        simple: {
+            none: {
+                none: {
+                    none: ' ',
+                    simple: '┘',
+                    double: '╛'
+                },
+                simple: {
+                    none: '│',
+                    simple: '┤',
+                    double: '╡'
+                },
+                double: {
+                    none: 'X',
+                    simple: 'X',
+                    double: 'X'
+                },
+            },
+            simple: {
+                none: {
+                    none: '└',
+                    simple: '┴',
+                    double: 'X'
+                },
+                simple: {
+                    none: '├',
+                    simple: '┼',
+                    double: 'X'
+                },
+                double: {
+                    none: 'X',
+                    simple: 'X',
+                    double: 'X'
+                },
+            },
+            double: {
+                none: {
+                    none: '╘',
+                    simple: 'X',
+                    double: '╧'
+                },
+                simple: {
+                    none: '╞',
+                    simple: 'X',
+                    double: '╪'
+                },
+                double: {
+                    none: 'X',
+                    simple: 'X',
+                    double: 'X'
+                },
+            },
+        },
+        double: {
+            none: {
+                none: {
+                    none: ' ',
+                    simple: '╜',
+                    double: '╝'
+                },
+                simple: {
+                    none: 'X',
+                    simple: 'X',
+                    double: 'X'
+                },
+                double: {
+                    none: '║',
+                    simple: '╢',
+                    double: '╣'
+                },
+            },
+            simple: {
+                none: {
+                    none: '╙',
+                    simple: '╨',
+                    double: 'X'
+                },
+                simple: {
+                    none: 'D',
+                    simple: 'X',
+                    double: 'X'
+                },
+                double: {
+                    none: '╟',
+                    simple: '╫',
+                    double: 'X'
+                },
+            },
+            double: {
+                none: {
+                    none: '╚',
+                    simple: 'X',
+                    double: '╩'
+                },
+                simple: {
+                    none: 'X',
+                    simple: 'X',
+                    double: 'X'
+                },
+                double: {
+                    none: '╠',
+                    simple: 'X',
+                    double: '╬'
+                }
+            }
+        }
+    };
     var spacePadding = document.getElementById("spacePadding").checked;
     var highlight = document.getElementById("highlight").value;
+    
     var horizontalHeader = document.getElementById("horizontal_header").value;
+    var horizontalTopBorder = document.getElementById("horizontal_top_border").value;
+    var horizontalInnerHeaderBorder = document.getElementById("horizontal_inner_header_border").value;
+    var horizontalInnerBorder = document.getElementById("horizontal_inner_border").value;
+    var horizontalBottomBorder = document.getElementById("horizontal_bottom_border").value;
+    
     var verticalHeader = document.getElementById("vertical_header").value;
-
+    var verticalLeftBorder = document.getElementById("vertical_left_border").value;
+    var verticalInnerHeaderBorder = document.getElementById("vertical_inner_header_border").value;
+    var verticalInnerBorder = document.getElementById("vertical_inner_border").value;
+    var verticalRightBorder = document.getElementById("vertical_right_border").value;
+    
     var data = extractData(spacePadding, horizontalHeader, verticalHeader);
     var widths = getWidths(data, spacePadding);
     var heights = getHeights(data, spacePadding);
@@ -72,7 +198,9 @@ function genPTT(){
     var typeOption = document.getElementById('type').value;
 
     // top
-    str += generateSeparationLine(widths, highlight, "horizontal_top_border", style.top_left, style.top_center, style.top_right, style.horizontal);
+    if ('none' != horizontalTopBorder) {
+        str += generateUnicodeSeparationLine(widths, highlight, unicode, "horizontal_top_border", true, false, verticalLeftBorder, verticalInnerBorder, verticalRightBorder, horizontalTopBorder);
+    }
 
     // rows
     for (i = 0; i < heights.length; i++) {
@@ -89,7 +217,7 @@ function genPTT(){
 
         for (m = 0; m < heights[i]; m++) {
             str += openHighlighted(highlight, "vertical_left_border");
-            str += style.vertical;
+            str += unicode[verticalLeftBorder]['none'][verticalLeftBorder]['none'];
             str += closeHighlighted(highlight, "vertical_left_border");
             for (j = 0; j < widths.length; j++) {
                 item = data.arr[i][j];
@@ -115,25 +243,27 @@ function genPTT(){
                 }
                 if (j < widths.length-1) {
                     str += openHighlighted(highlight, "vertical_inner_border");
-                    str += style.vertical;
+                    str += unicode[verticalInnerBorder]['none'][verticalInnerBorder]['none'];
                     str += closeHighlighted(highlight, "vertical_inner_border");
                 }
             }
             str += openHighlighted(highlight, "vertical_right_border");
-            str += style.vertical;
+            str += unicode[verticalRightBorder]['none'][verticalRightBorder]['none'];
             str += closeHighlighted(highlight, "vertical_right_border");
             str += '\n';
         }
 
-        if ('none' != horizontalHeader && i == 0 && heights.length > 0) {
-            str += generateSeparationLine(widths, highlight, "horizontal_inner_header_border", style.middle_left, style.middle_center, style.middle_right, style.horizontal);
-        } else if('grid' == typeOption && i < heights.length - 1) {
-            str += generateSeparationLine(widths, highlight, "horizontal_inner_border", style.middle_left, style.middle_center, style.middle_right, style.horizontal);
+        if ('none' != horizontalInnerHeaderBorder && 'none' != horizontalHeader && i == 0 && heights.length > 0) {
+            str += generateUnicodeSeparationLine(widths, highlight, unicode, "horizontal_inner_header_border", false, false, verticalLeftBorder, verticalInnerBorder, verticalRightBorder, horizontalInnerHeaderBorder);
+        } else if('none' != horizontalInnerBorder && i < heights.length - 1) {
+            str += generateUnicodeSeparationLine(widths, highlight, unicode, "horizontal_inner_border", false, false, verticalLeftBorder, verticalInnerBorder, verticalRightBorder, horizontalInnerBorder);
         }
     }
 
     // bottom
-    str += generateSeparationLine(widths, highlight, "horizontal_bottom_border", style.bottom_left, style.bottom_center, style.bottom_right, style.horizontal);
+    if ('none' != horizontalBottomBorder) {
+        str += generateUnicodeSeparationLine(widths, highlight, unicode, "horizontal_bottom_border", false, true, verticalLeftBorder, verticalInnerBorder, verticalRightBorder, horizontalBottomBorder);
+    }
     $('#ptt-wrapper').html(str);
 }
 
@@ -313,6 +443,17 @@ function getHeights(data, spacePadding){
         heights[i] = h;
     }
     return heights;
+}
+
+function generateUnicodeSeparationLine(widths, highlight, unicode, horizontalLineMarker, top, bottom, verticalLeftBorder, verticalInnerBorder, verticalRightBorder, horizontalBorder){
+    
+    var leftChar = unicode[(top) ? 'none' : verticalLeftBorder][horizontalBorder][(bottom) ? 'none' : verticalLeftBorder]['none'];
+    var centerChar = unicode[(top) ? 'none' : verticalInnerBorder][horizontalBorder][(bottom) ? 'none' : verticalInnerBorder][horizontalBorder];
+    var rightChar = unicode[(top) ? 'none' : verticalRightBorder]['none'][(bottom) ? 'none' : verticalRightBorder][horizontalBorder];
+    
+    var horizontalChar = unicode['none'][horizontalBorder]['none'][horizontalBorder];
+    
+    return generateSeparationLine(widths, highlight, horizontalLineMarker, leftChar, centerChar, rightChar, horizontalChar);
 }
 
 function generateSeparationLine(widths, highlight, horizontalLineMarker, leftChar, centerChar, rightChar, horizontalChar){

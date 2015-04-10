@@ -74,27 +74,57 @@
             <div id='table-wrapper'>
             </div>
             <br>
-            <p>Type: <select id="type" name="type" onchange="genPTT();">
-              <option value="grid">Grid</option>
-              <option value="header">Header (first line)</option>
-              <option value="columns">Columns only</option>
-            </select> (will be deprecated)</p>
-            <p>Style: <select id="style" name="style" onchange="genPTT();">
-              <option value="simple">Single border</option>
-              <option value="double">Double border</option>
-              <option value="ascii">ASCII characters</option>
-            </select> (will be deprecated)</p>
             <p>Horizontal Header: <select id="horizontal_header" name="horizontal_header" onchange="genPTT();">
               <option value="first_line">First line</option>
               <option value="none">None</option>
               <option value="number">Number</option>
               <option value="letter">Letter</option>
             </select></p>
+            <p>Horizontal Top Border: <select id="horizontal_top_border" name="horizontal_top_border" onchange="genPTT();">
+              <option value="none">None</option>
+              <option value="simple">Simple</option>
+              <option value="double">Double</option>
+            </select></p>
+            <p>Horizontal Inner Header Border:<select id="horizontal_inner_header_border" name="horizontal_inner_header_border" onchange="genPTT();">
+              <option value="none">None</option>
+              <option value="simple">Simple</option>
+              <option value="double">Double</option>
+            </select>(only if Horizontal_Header != none)</p>
+            <p>Horizontal Inner Border: <select id="horizontal_inner_border" name="horizontal_inner_border" onchange="genPTT();">
+              <option value="none">None</option>
+              <option value="simple">Simple</option>
+              <option value="double">Double</option>
+            </select></p>
+            <p>Horizontal Bottom Border: <select id="horizontal_bottom_border" name="horizontal_bottom_border" onchange="genPTT();">
+              <option value="none">None</option>
+              <option value="simple">Simple</option>
+              <option value="double">Double</option>
+            </select></p>
             <p>Vertical Header: <select id="vertical_header" name="vertical_header" onchange="genPTT();">
               <option value="none">None</option>
               <option value="first_line">First line</option>
               <option value="number">Number</option>
               <option value="letter">Letter</option>
+            </select></p>
+            <p>Vertical Left Border: <select id="vertical_left_border" name="vertical_left_border" onchange="genPTT();">
+              <option value="none">None</option>
+              <option value="simple">Simple</option>
+              <option value="double">Double</option>
+            </select></p>
+            <p>Vertical Inner Header Border:<select id="vertical_inner_header_border" name="vertical_inner_header_border" onchange="genPTT();">
+              <option value="none">None</option>
+              <option value="simple">Simple</option>
+              <option value="double">Double</option>
+            </select>(only if Vertical_Header != none)</p>
+            <p>Vertical Inner Border: <select id="vertical_inner_border" name="vertical_inner_border" onchange="genPTT();">
+              <option value="none">None</option>
+              <option value="simple">Simple</option>
+              <option value="double">Double</option>
+            </select></p>
+            <p>Vertical Right Border: <select id="vertical_right_border" name="vertical_right_border" onchange="genPTT();">
+              <option value="none">None</option>
+              <option value="simple">Simple</option>
+              <option value="double">Double</option>
             </select></p>
             <p><input type="checkbox" id="spacePadding" checked="checked" onclick="genPTT();"> Ensure a padding of one space in each cell.</input></p>
             <p>Highlight: <select id="highlight" name="highlight" onchange="genPTT();">
