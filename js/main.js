@@ -20,7 +20,7 @@ function genPTT(){
                 none: {
                     none: ' ',
                     simple: ' ',
-                    double: 'X'
+                    double: ' '
                 },
                 simple: {
                     none: ' ',
@@ -195,11 +195,10 @@ function genPTT(){
     var heights = getHeights(data, spacePadding);
     var str = "";
     var i, j, k, m, entry, item, offsets, end;
-    var typeOption = document.getElementById('type').value;
 
     // top
     if ('none' != horizontalTopBorder) {
-        str += generateUnicodeSeparationLine(widths, highlight, unicode, "horizontal_top_border", true, false, verticalLeftBorder, verticalInnerBorder, verticalRightBorder, horizontalTopBorder);
+        str += generateUnicodeSeparationLine(widths, highlight, unicode, verticalHeader, verticalLeftBorder, verticalInnerHeaderBorder, verticalInnerBorder, verticalRightBorder, "horizontal_top_border", true, false, horizontalTopBorder);
     }
 
     // rows
@@ -241,7 +240,11 @@ function genPTT(){
                 for (k = 0; k < end; k++) {
                     str += ' ';
                 }
-                if (j < widths.length-1) {
+                if ('none' != verticalHeader && j == 0 && heights.length > 0) {
+                    str += openHighlighted(highlight, "vertical_inner_header_border");
+                    str += unicode[verticalInnerHeaderBorder]['none'][verticalInnerHeaderBorder]['none'];
+                    str += closeHighlighted(highlight, "vertical_inner_header_border");
+                } else if(j < widths.length - 1) {
                     str += openHighlighted(highlight, "vertical_inner_border");
                     str += unicode[verticalInnerBorder]['none'][verticalInnerBorder]['none'];
                     str += closeHighlighted(highlight, "vertical_inner_border");
@@ -254,15 +257,15 @@ function genPTT(){
         }
 
         if ('none' != horizontalInnerHeaderBorder && 'none' != horizontalHeader && i == 0 && heights.length > 0) {
-            str += generateUnicodeSeparationLine(widths, highlight, unicode, "horizontal_inner_header_border", false, false, verticalLeftBorder, verticalInnerBorder, verticalRightBorder, horizontalInnerHeaderBorder);
+            str += generateUnicodeSeparationLine(widths, highlight, unicode, verticalHeader, verticalLeftBorder, verticalInnerHeaderBorder, verticalInnerBorder, verticalRightBorder, "horizontal_inner_header_border", false, false, horizontalInnerHeaderBorder);
         } else if('none' != horizontalInnerBorder && i < heights.length - 1) {
-            str += generateUnicodeSeparationLine(widths, highlight, unicode, "horizontal_inner_border", false, false, verticalLeftBorder, verticalInnerBorder, verticalRightBorder, horizontalInnerBorder);
+            str += generateUnicodeSeparationLine(widths, highlight, unicode, verticalHeader, verticalLeftBorder, verticalInnerHeaderBorder, verticalInnerBorder, verticalRightBorder, "horizontal_inner_border", false, false, horizontalInnerBorder);
         }
     }
 
     // bottom
     if ('none' != horizontalBottomBorder) {
-        str += generateUnicodeSeparationLine(widths, highlight, unicode, "horizontal_bottom_border", false, true, verticalLeftBorder, verticalInnerBorder, verticalRightBorder, horizontalBottomBorder);
+        str += generateUnicodeSeparationLine(widths, highlight, unicode, verticalHeader, verticalLeftBorder, verticalInnerHeaderBorder, verticalInnerBorder, verticalRightBorder, "horizontal_bottom_border", false, true, horizontalBottomBorder);
     }
     $('#ptt-wrapper').html(str);
 }
@@ -445,31 +448,36 @@ function getHeights(data, spacePadding){
     return heights;
 }
 
-function generateUnicodeSeparationLine(widths, highlight, unicode, horizontalLineMarker, top, bottom, verticalLeftBorder, verticalInnerBorder, verticalRightBorder, horizontalBorder){
+function generateUnicodeSeparationLine(widths, highlight, unicode, verticalHeader, verticalLeftBorder, verticalInnerHeaderBorder, verticalInnerBorder, verticalRightBorder, horizontalLineMarker, top, bottom, horizontalBorder){
     
     var leftChar = unicode[(top) ? 'none' : verticalLeftBorder][horizontalBorder][(bottom) ? 'none' : verticalLeftBorder]['none'];
-    var centerChar = unicode[(top) ? 'none' : verticalInnerBorder][horizontalBorder][(bottom) ? 'none' : verticalInnerBorder][horizontalBorder];
-    var rightChar = unicode[(top) ? 'none' : verticalRightBorder]['none'][(bottom) ? 'none' : verticalRightBorder][horizontalBorder];
+    var inHeadCh = unicode[(top) ? 'none' : verticalInnerHeaderBorder][horizontalBorder][(bottom) ? 'none' : verticalInnerHeaderBorder][horizontalBorder];
+    var innerCha = unicode[(top) ? 'none' : verticalInnerBorder][horizontalBorder][(bottom) ? 'none' : verticalInnerBorder][horizontalBorder];
+    var rightCha = unicode[(top) ? 'none' : verticalRightBorder]['none'][(bottom) ? 'none' : verticalRightBorder][horizontalBorder];
     
     var horizontalChar = unicode['none'][horizontalBorder]['none'][horizontalBorder];
     
-    return generateSeparationLine(widths, highlight, horizontalLineMarker, leftChar, centerChar, rightChar, horizontalChar);
+    return generateSeparationLine(widths, highlight, verticalHeader, horizontalLineMarker, leftChar, inHeadCh, innerCha, rightCha, horizontalChar);
 }
 
-function generateSeparationLine(widths, highlight, horizontalLineMarker, leftChar, centerChar, rightChar, horizontalChar){
-    var i, j;
+function generateSeparationLine(widths, highlight, verticalHeader, horizontalLineMarker, leftChar, innerHeaderChar, innerChar, rightChar, horizontalChar){
+    var j, k;
     var str = "";
     str += openHighlighted(highlight, horizontalLineMarker);
     str += openHighlighted(highlight, "vertical_left_border");
     str += leftChar;
     str += closeHighlighted(highlight, "vertical_left_border");
-    for (i = 0; i < widths.length; i++) {
-        for (j = 0; j < widths[i]; j++) {
+    for (j = 0; j < widths.length; j++) {
+        for (k = 0; k < widths[j]; k++) {
             str += horizontalChar;
         }
-        if (i < widths.length-1) {
+        if ('none' != verticalHeader && j == 0) {
+            str += openHighlighted(highlight, "vertical_inner_header_border");
+            str += innerHeaderChar;
+            str += closeHighlighted(highlight, "vertical_inner_header_border");
+        } else if(j < widths.length - 1) {
             str += openHighlighted(highlight, "vertical_inner_border");
-            str += centerChar;
+            str += innerChar;
             str += closeHighlighted(highlight, "vertical_inner_border");
         }
     }
