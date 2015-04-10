@@ -340,10 +340,16 @@ function extractData(spacePadding, horizontalHeader, verticalHeader){
     }
     vLen = getVLen(result, (i + iOffset - 1), (j + jOffset - 1));
     hLen = getHLen(result, (i + iOffset - 1), (j + jOffset - 1));
+    if('none' != verticalHeader) {
+        jOffset = 1;
+    }
     if('number' == horizontalHeader || 'letter' == horizontalHeader) {
         for (j = 0; j < hLen - jOffset; j++) {
             result[0][j + jOffset] = generateHeader(horizontalHeader, spacePadding, j);
         }
+    }
+    if('none' != horizontalHeader) {
+        iOffset = 1;
     }
     if('number' == verticalHeader || 'letter' == verticalHeader) {
         for (i = 0; i < vLen - iOffset; i++) {
