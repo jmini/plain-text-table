@@ -80,24 +80,24 @@
               <option value="number">Number</option>
               <option value="letter">Letter</option>
             </select></p>
-            <p>Horizontal Top Border: <select id="horizontal_top_border" name="horizontal_top_border" onchange="genPTT();">
+            <p>Horizontal Top Border: <select id="horizontal_top_border" name="horizontal_top_border" onfocus="borderSelectGetFocus(this);" onchange="borderSelectChange(this);" onblur="borderSelectLostFocus(this);">
               <option value="none">None</option>
-              <option value="simple">Simple</option>
+              <option value="single">Single</option>
               <option value="double" selected="selected">Double</option>
             </select></p>
-            <p>Horizontal Inner Header Border:<select id="horizontal_inner_header_border" name="horizontal_inner_header_border" onchange="genPTT();">
+            <p>Horizontal Inner Header Border:<select id="horizontal_inner_header_border" name="horizontal_inner_header_border" onfocus="borderSelectGetFocus(this);" onchange="borderSelectChange(this);" onblur="borderSelectLostFocus(this);">
               <option value="none">None</option>
-              <option value="simple">Simple</option>
+              <option value="single">Single</option>
               <option value="double" selected="selected">Double</option>
             </select>(only if Horizontal_Header != none)</p>
-            <p>Horizontal Inner Border: <select id="horizontal_inner_border" name="horizontal_inner_border" onchange="genPTT();">
+            <p>Horizontal Inner Border: <select id="horizontal_inner_border" name="horizontal_inner_border" onfocus="borderSelectGetFocus(this);" onchange="borderSelectChange(this);" onblur="borderSelectLostFocus(this);">
               <option value="none">None</option>
-              <option value="simple" selected="selected">Simple</option>
+              <option value="single" selected="selected">Single</option>
               <option value="double">Double</option>
             </select></p>
-            <p>Horizontal Bottom Border: <select id="horizontal_bottom_border" name="horizontal_bottom_border" onchange="genPTT();">
+            <p>Horizontal Bottom Border: <select id="horizontal_bottom_border" name="horizontal_bottom_border" onfocus="borderSelectGetFocus(this);" onchange="borderSelectChange(this);" onblur="borderSelectLostFocus(this);">
               <option value="none">None</option>
-              <option value="simple">Simple</option>
+              <option value="single">Single</option>
               <option value="double" selected="selected">Double</option>
             </select></p>
             <p>Vertical Header: <select id="vertical_header" name="vertical_header" onchange="genPTT();">
@@ -106,37 +106,27 @@
               <option value="number">Number</option>
               <option value="letter">Letter</option>
             </select></p>
-            <p>Vertical Left Border: <select id="vertical_left_border" name="vertical_left_border" onchange="genPTT();">
+            <p>Vertical Left Border: <select id="vertical_left_border" name="vertical_left_border" onfocus="borderSelectGetFocus(this);" onchange="borderSelectChange(this);" onblur="borderSelectLostFocus(this);">
               <option value="none">None</option>
-              <option value="simple">Simple</option>
+              <option value="single">Single</option>
               <option value="double" selected="selected">Double</option>
             </select></p>
-            <p>Vertical Inner Header Border:<select id="vertical_inner_header_border" name="vertical_inner_header_border" onchange="genPTT();">
+            <p>Vertical Inner Header Border:<select id="vertical_inner_header_border" name="vertical_inner_header_border" onfocus="borderSelectGetFocus(this);" onchange="borderSelectChange(this);" onblur="borderSelectLostFocus(this);">
               <option value="none">None</option>
-              <option value="simple">Simple</option>
+              <option value="single">Single</option>
               <option value="double" selected="selected">Double</option>
             </select>(only if Vertical_Header != none)</p>
-            <p>Vertical Inner Border: <select id="vertical_inner_border" name="vertical_inner_border" onchange="genPTT();">
+            <p>Vertical Inner Border: <select id="vertical_inner_border" name="vertical_inner_border" onfocus="borderSelectGetFocus(this);" onchange="borderSelectChange(this);" onblur="borderSelectLostFocus(this);">
               <option value="none">None</option>
-              <option value="simple" selected="selected">Simple</option>
+              <option value="single" selected="selected">Single</option>
               <option value="double">Double</option>
             </select></p>
-            <p>Vertical Right Border: <select id="vertical_right_border" name="vertical_right_border" onchange="genPTT();">
+            <p>Vertical Right Border: <select id="vertical_right_border" name="vertical_right_border" onfocus="borderSelectGetFocus(this);" onchange="borderSelectChange(this);" onblur="borderSelectLostFocus(this);">
               <option value="none">None</option>
-              <option value="simple">Simple</option>
+              <option value="single">Single</option>
               <option value="double" selected="selected">Double</option>
             </select></p>
             <p><input type="checkbox" id="spacePadding" checked="checked" onclick="genPTT();"> Ensure a padding of one space in each cell.</input></p>
-            <p>Highlight: <select id="highlight" name="highlight" onchange="genPTT();">
-              <option value="horizontal_top_border">Horizontal Top Border</option>
-              <option value="horizontal_inner_header_border">Horizontal Inner Header Border</option>
-              <option value="horizontal_inner_border">Horizontal Inner Border</option>
-              <option value="horizontal_bottom_border">Horizontal Bottom Border</option>
-              <option value="vertical_left_border">Vertical Left Border</option>
-              <option value="vertical_inner_header_border">Vertical Inner Header Border</option>
-              <option value="vertical_inner_border">Vertical Inner Border</option>
-              <option value="vertical_right_border">Vertical Right Border</option>
-            </select></p>
             <pre id="ptt-wrapper"></pre>
             <hr>
 

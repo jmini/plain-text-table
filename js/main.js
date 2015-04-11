@@ -6,6 +6,10 @@
             colHeaders: false,
             contextMenu: true,
             afterChange: genPTT,
+            afterCreateRow: genPTT,
+            afterRemoveRow: genPTT,
+            afterCreateCol: genPTT,
+            afterRemoveCol: genPTT,
             afterSetCellMeta: genPTT
         });
     }
@@ -13,110 +17,126 @@
     createTable();
 })();
 
+function borderSelectGetFocus(cbbox){
+    generateTable(cbbox.name);
+}
+
+function borderSelectChange(cbbox){
+    generateTable(cbbox.name);
+}
+
+function borderSelectLostFocus(cbbox){
+    generateTable(null);
+}
+
 function genPTT(){
+    generateTable(null);
+}
+
+function generateTable(highlight){
     var unicode = {
         none: {
             none: {
                 none: {
                     none: ' ',
-                    simple: ' ',
+                    single: ' ',
                     double: ' '
                 },
-                simple: {
+                single: {
                     none: ' ',
-                    simple: '┐',
+                    single: '┐',
                     double: '╕'
                 },
                 double: {
                     none: ' ',
-                    simple: '╖',
+                    single: '╖',
                     double: '╗'
                 },
             },
-            simple: {
+            single: {
                 none: {
                     none: ' ',
-                    simple: '─',
+                    single: '─',
                     double: 'X'
                 },
-                simple: {
+                single: {
                     none: '┌',
-                    simple: '┬',
+                    single: '┬',
                     double: 'Z'
                 },
                 double: {
                     none: '╓',
-                    simple: '╥',
+                    single: '╥',
                     double: 'X'
                 },
             },
             double: {
                 none: {
                     none: ' ',
-                    simple: 'X',
+                    single: 'X',
                     double: '═'
                 },
-                simple: {
+                single: {
                     none: '╒',
-                    simple: 'X',
+                    single: 'X',
                     double: '╤'
                 },
                 double: {
                     none: '╔',
-                    simple: 'X',
+                    single: 'X',
                     double: '╦'
                 },
             },
         },
-        simple: {
+        single: {
             none: {
                 none: {
                     none: ' ',
-                    simple: '┘',
+                    single: '┘',
                     double: '╛'
                 },
-                simple: {
+                single: {
                     none: '│',
-                    simple: '┤',
+                    single: '┤',
                     double: '╡'
                 },
                 double: {
                     none: 'X',
-                    simple: 'X',
+                    single: 'X',
                     double: 'X'
                 },
             },
-            simple: {
+            single: {
                 none: {
                     none: '└',
-                    simple: '┴',
+                    single: '┴',
                     double: 'X'
                 },
-                simple: {
+                single: {
                     none: '├',
-                    simple: '┼',
+                    single: '┼',
                     double: 'X'
                 },
                 double: {
                     none: 'X',
-                    simple: 'X',
+                    single: 'X',
                     double: 'X'
                 },
             },
             double: {
                 none: {
                     none: '╘',
-                    simple: 'X',
+                    single: 'X',
                     double: '╧'
                 },
-                simple: {
+                single: {
                     none: '╞',
-                    simple: 'X',
+                    single: 'X',
                     double: '╪'
                 },
                 double: {
                     none: 'X',
-                    simple: 'X',
+                    single: 'X',
                     double: 'X'
                 },
             },
@@ -125,58 +145,57 @@ function genPTT(){
             none: {
                 none: {
                     none: ' ',
-                    simple: '╜',
+                    single: '╜',
                     double: '╝'
                 },
-                simple: {
+                single: {
                     none: 'X',
-                    simple: 'X',
+                    single: 'X',
                     double: 'X'
                 },
                 double: {
                     none: '║',
-                    simple: '╢',
+                    single: '╢',
                     double: '╣'
                 },
             },
-            simple: {
+            single: {
                 none: {
                     none: '╙',
-                    simple: '╨',
+                    single: '╨',
                     double: 'X'
                 },
-                simple: {
+                single: {
                     none: 'D',
-                    simple: 'X',
+                    single: 'X',
                     double: 'X'
                 },
                 double: {
                     none: '╟',
-                    simple: '╫',
+                    single: '╫',
                     double: 'X'
                 },
             },
             double: {
                 none: {
                     none: '╚',
-                    simple: 'X',
+                    single: 'X',
                     double: '╩'
                 },
-                simple: {
+                single: {
                     none: 'X',
-                    simple: 'X',
+                    single: 'X',
                     double: 'X'
                 },
                 double: {
                     none: '╠',
-                    simple: 'X',
+                    single: 'X',
                     double: '╬'
                 }
             }
         }
     };
     var spacePadding = document.getElementById("spacePadding").checked;
-    var highlight = document.getElementById("highlight").value;
     
     var horizontalHeader = document.getElementById("horizontal_header").value;
     var horizontalTopBorder = document.getElementById("horizontal_top_border").value;

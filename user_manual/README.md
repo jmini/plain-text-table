@@ -48,6 +48,9 @@ For each border you can select:
 
 Depending on the char set (Unicode or ASCII) some combinations are not possible.
 
+To help you to understand which border your are modifying with one combo box, the border corresponding to the selected combo box is highlighted in the output.
+To remove the highlighting just focus somewhere else. 
+
 ### Horizontal Top Border
 
     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
