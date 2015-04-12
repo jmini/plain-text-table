@@ -167,6 +167,46 @@ This border is only present if line headers are defined (`vertical header` set t
     ║ 3 ║ Samson    │ Dick       │      948 │   yes   X
     ╚═══╩═══════════╧════════════╧══════════╧═════════X
 
+## ASCII intersection character
+
+When the charset is set to `Ascii`, this option allows to configure what the character at the intersection of two borders will be.
+
+__Plus__ (default):
+
+    +====+========+
+    | Id | Name   |
+    +====+========+
+    | 1  | Alice  |
+    +----+--------+
+    | 2  | Bob    |
+    +----+--------+
+    | 3  | Carrie |
+    +====+========+
+
+__Horizontal border__:
+
+    ===============
+    | Id | Name   |
+    ===============
+    | 1  | Alice  |
+    ---------------
+    | 2  | Bob    |
+    ---------------
+    | 3  | Carrie |
+    ===============
+
+__Vertical border__:
+
+    |====|========|
+    | Id | Name   |
+    |====|========|
+    | 1  | Alice  |
+    |----|--------|
+    | 2  | Bob    |
+    |----|--------|
+    | 3  | Carrie |
+    |====|========|
+
 ## Cell padding
 
 There is a checkbox to configure if additional spaces should be added to ensure a cell padding of one space in each cell.

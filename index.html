@@ -78,12 +78,20 @@
               <option value="ascii">Ascii</option>
               <option value="unicode" selected="selected">Unicode</option>
             </select></p>
+            <hr/>
             <p>Horizontal Header: <select id="horizontal_header" name="horizontalHeader" onchange="genPTT();">
               <option value="none">None</option>
               <option value="first_line" selected="selected">First line</option>
               <option value="number">Number</option>
               <option value="letter">Letter</option>
             </select></p>
+            <p>Vertical Header: <select id="vertical_header" name="verticalHeader" onchange="genPTT();">
+              <option value="none" selected="selected">None</option>
+              <option value="first_column">First column</option>
+              <option value="number">Number</option>
+              <option value="letter">Letter</option>
+            </select></p>
+            <hr/>
             <p>Horizontal Top Border: <select id="horizontal_top_border" name="horizontalTopBorder" onfocus="borderSelectGetFocus(this);" onchange="borderSelectChange(this);" onblur="borderSelectLostFocus(this);">
               <option value="none">None</option>
               <option value="single">Single</option>
@@ -104,12 +112,7 @@
               <option value="single">Single</option>
               <option value="double" selected="selected">Double</option>
             </select></p>
-            <p>Vertical Header: <select id="vertical_header" name="verticalHeader" onchange="genPTT();">
-              <option value="none" selected="selected">None</option>
-              <option value="first_column">First column</option>
-              <option value="number">Number</option>
-              <option value="letter">Letter</option>
-            </select></p>
+            <hr/>
             <p>Vertical Left Border: <select id="vertical_left_border" name="verticalLeftBorder" onfocus="borderSelectGetFocus(this);" onchange="borderSelectChange(this);" onblur="borderSelectLostFocus(this);">
               <option value="none">None</option>
               <option value="single">Single</option>
@@ -129,6 +132,12 @@
               <option value="none">None</option>
               <option value="single">Single</option>
               <option value="double" selected="selected">Double</option>
+            </select></p>
+            <hr/>
+            <p>ASCII intersection character: <select id="ascii_intersection" name="asciiIntersection" onchange="genPTT();">
+              <option value="plus" selected="selected">Plus</option>
+              <option value="horizontal_border">Horizontal Border</option>
+              <option value="vertical_border">Vertical Border</option>
             </select></p>
             <p><input type="checkbox" id="spacePadding" checked="checked" onclick="genPTT();"> Ensure a padding of one space in each cell.</input></p>
             <pre id="ptt-wrapper"></pre>

@@ -18,11 +18,11 @@
 })();
 
 function borderSelectGetFocus(cbbox){
-    generateTable(cbbox.name);
+    generateTable(cbbox.name.substring(0, cbbox.name.length - 6));
 }
 
 function borderSelectChange(cbbox){
-    generateTable(cbbox.name);
+    generateTable(cbbox.name.substring(0, cbbox.name.length - 6));
 }
 
 function borderSelectLostFocus(cbbox){
@@ -241,7 +241,9 @@ function generateTable(highlight){
         verticalLeft: document.getElementById("vertical_left_border").value,
         verticalInnerHeader: document.getElementById("vertical_inner_header_border").value,
         verticalInner: document.getElementById("vertical_inner_border").value,
-        verticalRight: document.getElementById("vertical_right_border").value
+        verticalRight: document.getElementById("vertical_right_border").value,
+        
+        asciiIntersection: document.getElementById("ascii_intersection").value
     }
     
     var data = extractData(spacePadding, horizontalHeader, verticalHeader);
@@ -512,10 +514,22 @@ function generateSeparationLine(widths, highlight, unicode, line, charset, verti
     var j, k, leftChar, innerHeaderChar, innerChar, rightChar;
     var horizontalBorder = border[horizontalBorderKey];
     if('ascii' == charset) {
-        leftChar = '+';
-        innerHeaderChar = '+';
-        innerChar = '+';
-        rightChar = '+';
+        if('horizontal_border' == border.asciiIntersection) {
+            leftChar = line.ascii[horizontalBorder].horizontal;
+            innerHeaderChar = line.ascii[horizontalBorder].horizontal;
+            innerChar = line.ascii[horizontalBorder].horizontal;
+            rightChar = line.ascii[horizontalBorder].horizontal;
+        } else if('vertical_border' == border.asciiIntersection) {
+            leftChar = line.ascii[border.verticalLeft].vertical;
+            innerHeaderChar = line.ascii[border.verticalInnerHeader].vertical;
+            innerChar = line.ascii[border.verticalInner].vertical;
+            rightChar = line.ascii[border.verticalRight].vertical;
+        } else {
+            leftChar = '+';
+            innerHeaderChar = '+';
+            innerChar = '+';
+            rightChar = '+';
+        }
     } else {
         leftChar = unicode[(top) ? 'none' : border.verticalLeft][horizontalBorder][(bottom) ? 'none' : border.verticalLeft]['none'];
         innerHeaderChar = unicode[(top) ? 'none' : border.verticalInnerHeader][horizontalBorder][(bottom) ? 'none' : border.verticalInnerHeader][horizontalBorder];
