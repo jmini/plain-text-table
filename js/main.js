@@ -15,7 +15,76 @@
     }
 
     createTable();
+
+    updateAsciiIntersectionVisibility(document.getElementById("charset").value);
+    updateHorizontalInnerHeaderBorderVisibility(document.getElementById("horizontal_header").value);
+    updateVerticalInnerHeaderBorderVisibility(document.getElementById("vertical_header").value);
 })();
+
+function charsetSelectChange(cbbox){
+    updateAsciiIntersectionVisibility(cbbox.value);
+    generateTable(null);
+}
+
+function updateAsciiIntersectionVisibility(charsetValue) {
+    if('ascii' == charsetValue) {
+        $('#p_ascii_intersection').show();
+        
+        if('double' == $('#vertical_left_border').val()) {
+            $('#vertical_left_border').val('single');
+        }
+        $("#vertical_left_border option[value='double']").remove();
+        
+        if('double' == $('#vertical_inner_header_border').val()) {
+            $('#vertical_inner_header_border').val('single');
+        }
+        $("#vertical_inner_header_border option[value='double']").remove();
+        
+        if('double' == $('#vertical_inner_border').val()) {
+            $('#vertical_inner_border').val('single');
+        }
+        $("#vertical_inner_border option[value='double']").remove();
+        
+        if('double' == $('#vertical_right_border').val()) {
+            $('#vertical_right_border').val('single');
+        }
+        $("#vertical_right_border option[value='double']").remove();
+
+    } else {
+        $('#p_ascii_intersection').hide();
+        
+        $("#vertical_left_border").append('<option value="double">Double</option>');
+        $("#vertical_inner_header_border").append('<option value="double">Double</option>');
+        $("#vertical_inner_border").append('<option value="double">Double</option>');
+        $("#vertical_right_border").append('<option value="double">Double</option>');
+    }
+}
+
+function horizontalHeaderSelectChange(cbbox){
+    updateHorizontalInnerHeaderBorderVisibility(cbbox.value);
+    generateTable(null);
+}
+
+function updateHorizontalInnerHeaderBorderVisibility(horizontalHeaderValue) {
+    if('none' == horizontalHeaderValue) {
+        $('#p_horizontal_inner_header_border').hide();
+    } else {
+        $('#p_horizontal_inner_header_border').show();
+    }
+}
+
+function verticalHeaderSelectChange(cbbox){
+    updateVerticalInnerHeaderBorderVisibility(cbbox.value);
+    generateTable(null);
+}
+
+function updateVerticalInnerHeaderBorderVisibility(verticalHeaderValue) {
+    if('none' == verticalHeaderValue) {
+        $('#p_vertical_inner_header_border').hide();
+    } else {
+        $('#p_vertical_inner_header_border').show();
+    }
+}
 
 function borderSelectGetFocus(cbbox){
     generateTable(cbbox.name.substring(0, cbbox.name.length - 6));
