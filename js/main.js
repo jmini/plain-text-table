@@ -98,6 +98,182 @@ function borderSelectLostFocus(cbbox){
     generateTable(null);
 }
 
+function predefinedStyle(value){
+    if('unicode2' == value) {
+        $('#charset').val('unicode');
+        $('#horizontal_header').val('first_line');
+        $('#vertical_header').val('first_column');
+        $('#horizontal_top_border').val('double');
+        $('#horizontal_inner_header_border').val('single');
+        $('#horizontal_inner_border').val('none');
+        $('#horizontal_bottom_border').val('double');
+        $('#vertical_left_border').val('double');
+        $('#vertical_inner_header_border').val('single');
+        $('#vertical_inner_border').val('none');
+        $('#vertical_right_border').val('double');
+        $('#ascii_intersection').val('plus');
+        $('#spacePadding').prop('checked', true);
+    } else if('unicode3' == value) {
+        $('#charset').val('unicode');
+        $('#horizontal_header').val('first_line');
+        $('#vertical_header').val('first_column');
+        $('#horizontal_top_border').val('none');
+        $('#horizontal_inner_header_border').val('double');
+        $('#horizontal_inner_border').val('none');
+        $('#horizontal_bottom_border').val('none');
+        $('#vertical_left_border').val('none');
+        $('#vertical_inner_header_border').val('single');
+        $('#vertical_inner_border').val('none');
+        $('#vertical_right_border').val('none');
+        $('#ascii_intersection').val('plus');
+        $('#spacePadding').prop('checked', true);
+    } else if('unicode4' == value) {
+        $('#charset').val('unicode');
+        $('#horizontal_header').val('letter');
+        $('#vertical_header').val('number');
+        $('#horizontal_top_border').val('double');
+        $('#horizontal_inner_header_border').val('double');
+        $('#horizontal_inner_border').val('single');
+        $('#horizontal_bottom_border').val('double');
+        $('#vertical_left_border').val('double');
+        $('#vertical_inner_header_border').val('double');
+        $('#vertical_inner_border').val('single');
+        $('#vertical_right_border').val('double');
+        $('#ascii_intersection').val('plus');
+        $('#spacePadding').prop('checked', true);
+    } else if('unicode5' == value) {
+        $('#charset').val('unicode');
+        $('#horizontal_header').val('letter');
+        $('#vertical_header').val('number');
+        $('#horizontal_top_border').val('none');
+        $('#horizontal_inner_header_border').val('double');
+        $('#horizontal_inner_border').val('none');
+        $('#horizontal_bottom_border').val('none');
+        $('#vertical_left_border').val('none');
+        $('#vertical_inner_header_border').val('double');
+        $('#vertical_inner_border').val('single');
+        $('#vertical_right_border').val('none');
+        $('#ascii_intersection').val('plus');
+        $('#spacePadding').prop('checked', true);
+    } else if('unicode6' == value) {
+        $('#charset').val('unicode');
+        $('#horizontal_header').val('first_line');
+        $('#vertical_header').val('letter');
+        $('#horizontal_top_border').val('none');
+        $('#horizontal_inner_header_border').val('single');
+        $('#horizontal_inner_border').val('none');
+        $('#horizontal_bottom_border').val('none');
+        $('#vertical_left_border').val('single');
+        $('#vertical_inner_header_border').val('single');
+        $('#vertical_inner_border').val('single');
+        $('#vertical_right_border').val('single');
+        $('#ascii_intersection').val('plus');
+        $('#spacePadding').prop('checked', true);
+    } else if('ascii1' == value) {
+        $('#charset').val('ascii');
+        $('#horizontal_header').val('first_line');
+        $('#vertical_header').val('none');
+        $('#horizontal_top_border').val('double');
+        $('#horizontal_inner_header_border').val('double');
+        $('#horizontal_inner_border').val('single');
+        $('#horizontal_bottom_border').val('double');
+        $('#vertical_left_border').val('single');
+        $('#vertical_inner_header_border').val('single');
+        $('#vertical_inner_border').val('single');
+        $('#vertical_right_border').val('single');
+        $('#ascii_intersection').val('horizontal_border');
+        $('#spacePadding').prop('checked', true);
+    } else if('ascii2' == value) {
+        $('#charset').val('ascii');
+        $('#horizontal_header').val('first_line');
+        $('#vertical_header').val('none');
+        $('#horizontal_top_border').val('single');
+        $('#horizontal_inner_header_border').val('single');
+        $('#horizontal_inner_border').val('none');
+        $('#horizontal_bottom_border').val('single');
+        $('#vertical_left_border').val('single');
+        $('#vertical_inner_header_border').val('single');
+        $('#vertical_inner_border').val('single');
+        $('#vertical_right_border').val('single');
+        $('#ascii_intersection').val('plus');
+        $('#spacePadding').prop('checked', true);
+    } else if('ascii3' == value) {
+        $('#charset').val('ascii');
+        $('#horizontal_header').val('first_line');
+        $('#vertical_header').val('none');
+        $('#horizontal_top_border').val('none');
+        $('#horizontal_inner_header_border').val('single');
+        $('#horizontal_inner_border').val('none');
+        $('#horizontal_bottom_border').val('none');
+        $('#vertical_left_border').val('none');
+        $('#vertical_inner_header_border').val('none');
+        $('#vertical_inner_border').val('none');
+        $('#vertical_right_border').val('none');
+        $('#ascii_intersection').val('vertical_border');
+        $('#spacePadding').prop('checked', true);
+    } else if('ascii4' == value) {
+        $('#charset').val('ascii');
+        $('#horizontal_header').val('first_line');
+        $('#vertical_header').val('none');
+        $('#horizontal_top_border').val('none');
+        $('#horizontal_inner_header_border').val('single');
+        $('#horizontal_inner_border').val('none');
+        $('#horizontal_bottom_border').val('none');
+        $('#vertical_left_border').val('single');
+        $('#vertical_inner_header_border').val('single');
+        $('#vertical_inner_border').val('single');
+        $('#vertical_right_border').val('single');
+        $('#ascii_intersection').val('vertical_border');
+        $('#spacePadding').prop('checked', true);
+    } else if('ascii5' == value) {
+        $('#charset').val('ascii');
+        $('#horizontal_header').val('letter');
+        $('#vertical_header').val('number');
+        $('#horizontal_top_border').val('none');
+        $('#horizontal_inner_header_border').val('single');
+        $('#horizontal_inner_border').val('none');
+        $('#horizontal_bottom_border').val('none');
+        $('#vertical_left_border').val('none');
+        $('#vertical_inner_header_border').val('single');
+        $('#vertical_inner_border').val('none');
+        $('#vertical_right_border').val('none');
+        $('#ascii_intersection').val('plus');
+        $('#spacePadding').prop('checked', true);
+    } else if('ascii6' == value) {
+        $('#charset').val('ascii');
+        $('#horizontal_header').val('letter');
+        $('#vertical_header').val('number');
+        $('#horizontal_top_border').val('double');
+        $('#horizontal_inner_header_border').val('double');
+        $('#horizontal_inner_border').val('single');
+        $('#horizontal_bottom_border').val('double');
+        $('#vertical_left_border').val('single');
+        $('#vertical_inner_header_border').val('single');
+        $('#vertical_inner_border').val('single');
+        $('#vertical_right_border').val('single');
+        $('#ascii_intersection').val('plus');
+        $('#spacePadding').prop('checked', true);
+    } else {
+        $('#charset').val('unicode');
+        $('#horizontal_header').val('first_line');
+        $('#vertical_header').val('none');
+        $('#horizontal_top_border').val('double');
+        $('#horizontal_inner_header_border').val('double');
+        $('#horizontal_inner_border').val('single');
+        $('#horizontal_bottom_border').val('double');
+        $('#vertical_left_border').val('double');
+        $('#vertical_inner_header_border').val('none');
+        $('#vertical_inner_border').val('single');
+        $('#vertical_right_border').val('double');
+        $('#ascii_intersection').val('plus');
+        $('#spacePadding').prop('checked', true)
+    }
+    updateAsciiIntersectionVisibility(document.getElementById("charset").value);
+    updateHorizontalInnerHeaderBorderVisibility(document.getElementById("horizontal_header").value);
+    updateVerticalInnerHeaderBorderVisibility(document.getElementById("vertical_header").value);
+    generateTable(null);
+}
+
 function genPTT(){
     generateTable(null);
 }

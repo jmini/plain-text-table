@@ -76,7 +76,7 @@
             <br>
             <pre id="ptt-wrapper"></pre>
             <hr>
-            <div id="configuration">
+            <div id="configuration" class="col-md-6">
                 <p>Characters: <select id="charset" name="charset" onchange="charsetSelectChange(this);">
                   <option value="ascii">Ascii</option>
                   <option value="unicode" selected="selected">Unicode</option>
@@ -143,6 +143,22 @@
                   <option value="vertical_border">Vertical Border</option>
                 </select></p>
                 <p><input type="checkbox" id="spacePadding" checked="checked" onclick="genPTT();"> Ensure a padding of one space in each cell.</input></p>
+            </div>
+            <div class="col-md-3">
+                <p><a onClick="predefinedStyle('unicode1')">Unicode 1</a><p>
+                <p><a onClick="predefinedStyle('unicode2')">Unicode 2</a><p>
+                <p><a onClick="predefinedStyle('unicode3')">Unicode 3</a><p>
+                <p><a onClick="predefinedStyle('unicode4')">Unicode 4</a><p>
+                <p><a onClick="predefinedStyle('unicode5')">Unicode 5</a><p>
+                <p><a onClick="predefinedStyle('unicode6')">Unicode 6</a><p>
+            </div>
+            <div class="col-md-3">
+                <p><a onClick="predefinedStyle('ascii1')">Ascii 1</a><p>
+                <p><a onClick="predefinedStyle('ascii2')">Ascii 2</a><p>
+                <p><a onClick="predefinedStyle('ascii3')">Ascii 3</a><p>
+                <p><a onClick="predefinedStyle('ascii4')">Ascii 4</a><p>
+                <p><a onClick="predefinedStyle('ascii5')">Ascii 5</a><p>
+                <p><a onClick="predefinedStyle('ascii6')">Ascii 6</a><p>
             </div>
 
             <table class="table footer-table">
