@@ -13,3 +13,7 @@
     color: red;
     background-color: yellow;
 }
+
+#predefined p {
+    text-align: center;
+}
