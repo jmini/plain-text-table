@@ -5,6 +5,7 @@
         $("#table-wrapper").handsontable({
             colHeaders: false,
             contextMenu: true,
+            mergeCells: true,
             afterChange: genPTT,
             afterCreateRow: genPTT,
             afterRemoveRow: genPTT,
@@ -763,9 +764,42 @@ function getHeights(data, spacePadding){
 }
 
 function generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, i){
-    var j, k, leftChar, innerHeaderChar, innerChar, rightChar;
+    var j, k;
+    var str = '';
+    
+    if(i == -1) {
+        horizontalBorderKey = 'horizontalTop';
+    } else if(i == data.vLen) {
+        horizontalBorderKey = 'horizontalBottom';
+    } else {
+        if(hasHorizontalInnerHeader(data, border, i, horizontalHeader)) {
+            horizontalBorderKey = 'horizontalInnerHeader';
+        } else if(hasHorizontalInner(data, border, i)){
+            horizontalBorderKey = 'horizontalInner';
+        } else {
+            return str;
+        }
+    }
+    var horizontalBorder = border[horizontalBorderKey];
+    var horizontalChar = line[charset][horizontalBorder].horizontal;
 
-    var top, bottom;
+    str += openHighlighted(highlight, horizontalBorderKey);
+    str += generateIntersection(data, charset, border, highlight, horizontalHeader, verticalHeader, unicode, line, i, -1);
+    for (j = 0; j < widths.length; j++) {
+        for (k = 0; k < widths[j]; k++) {
+            str += horizontalChar;
+        }
+        str += generateIntersection(data, charset, border, highlight, horizontalHeader, verticalHeader, unicode, line, i, j);
+    }
+    str += generateIntersection(data, charset, border, highlight, horizontalHeader, verticalHeader, unicode, line, i, j);
+    str += closeHighlighted(highlight, horizontalBorderKey);
+    str += '\n';
+    return str;
+}
+
+function generateIntersection(data, charset, border, highlight, horizontalHeader, verticalHeader, unicode, line, i, j) {
+    var top, bottom, left, right, horizontalBorderKey, verticalBorderKey, intersectionChar;
+    var str = '';
     if(i == -1) {
         top = true;
         bottom = false;
@@ -782,62 +816,51 @@ function generateSeparationLine(data, widths, highlight, unicode, line, charset,
         } else if(hasHorizontalInner(data, border, i)){
             horizontalBorderKey = 'horizontalInner';
         } else {
-            return '';
+            //unexpected: empty string return statement in generateSeparationLine(..)
+            return str;
         }
     }
-
-    var horizontalBorder = border[horizontalBorderKey];
-
-    if('ascii' == charset) {
-        if('horizontal_border' == border.asciiIntersection) {
-            leftChar = line.ascii[horizontalBorder].horizontal;
-            innerHeaderChar = line.ascii[horizontalBorder].horizontal;
-            innerChar = line.ascii[horizontalBorder].horizontal;
-            rightChar = line.ascii[horizontalBorder].horizontal;
-        } else if('vertical_border' == border.asciiIntersection) {
-            leftChar = line.ascii[border.verticalLeft].vertical;
-            innerHeaderChar = line.ascii[border.verticalInnerHeader].vertical;
-            innerChar = line.ascii[border.verticalInner].vertical;
-            rightChar = line.ascii[border.verticalRight].vertical;
+    
+    if(j == -1) {
+        left = true;
+        right = false;
+        verticalBorderKey = 'verticalLeft';
+    } else if(j == data.hLen) {
+        left = false;
+        right = true;
+        verticalBorderKey = 'verticalRight';
+    } else {
+        left = false;
+        right = false;
+        if('none' != verticalHeader && j == 0) {
+            verticalBorderKey = 'verticalInnerHeader';
+        } else if(j < data.hLen - 1) {
+            verticalBorderKey = 'verticalInner';
         } else {
-            leftChar = '+';
-            innerHeaderChar = '+';
-            innerChar = '+';
-            rightChar = '+';
+            return str;
+        }
+    }
+    
+    //TODO: handle merged cell and modify the values of top, right, bottom, left.
+    
+    var horizontalBorder = border[horizontalBorderKey];
+    var verticalBorder = border[verticalBorderKey];
+    if('ascii' == charset) {
+        //TODO: due to merged cell, horizontal and vertical line exists and override user configuration.
+        if('horizontal_border' == border.asciiIntersection) {
+            intersectionChar = line.ascii[horizontalBorder].horizontal;
+        } else if('vertical_border' == border.asciiIntersection) {
+            intersectionChar = line.ascii[verticalBorder].vertical;
+        } else {
+            intersectionChar = '+';
         }
     } else {
-        leftChar = unicode[(top) ? 'none' : border.verticalLeft][horizontalBorder][(bottom) ? 'none' : border.verticalLeft]['none'];
-        innerHeaderChar = unicode[(top) ? 'none' : border.verticalInnerHeader][horizontalBorder][(bottom) ? 'none' : border.verticalInnerHeader][horizontalBorder];
-        innerChar = unicode[(top) ? 'none' : border.verticalInner][horizontalBorder][(bottom) ? 'none' : border.verticalInner][horizontalBorder];
-        rightChar = unicode[(top) ? 'none' : border.verticalRight]['none'][(bottom) ? 'none' : border.verticalRight][horizontalBorder];
+        intersectionChar = unicode[(top) ? 'none' : verticalBorder][(right) ? 'none' : horizontalBorder][(bottom) ? 'none' : verticalBorder][(left) ? 'none' : horizontalBorder];
     }
     
-    var horizontalChar = line[charset][horizontalBorder].horizontal;
-    
-    var str = "";
-    str += openHighlighted(highlight, horizontalBorderKey);
-    str += openHighlighted(highlight, 'verticalLeft');
-    str += leftChar;
-    str += closeHighlighted(highlight, 'verticalLeft');
-    for (j = 0; j < widths.length; j++) {
-        for (k = 0; k < widths[j]; k++) {
-            str += horizontalChar;
-        }
-        if ('none' != verticalHeader && j == 0) {
-            str += openHighlighted(highlight, 'verticalInnerHeader');
-            str += innerHeaderChar;
-            str += closeHighlighted(highlight, 'verticalInnerHeader');
-        } else if(j < widths.length - 1) {
-            str += openHighlighted(highlight, 'verticalInner');
-            str += innerChar;
-            str += closeHighlighted(highlight, 'verticalInner');
-        }
-    }
-    str += openHighlighted(highlight, 'verticalRight');
-    str += rightChar;
-    str += closeHighlighted(highlight, 'verticalRight');
-    str += closeHighlighted(highlight, horizontalBorderKey);
-    str += '\n';
+    str += openHighlighted(highlight, verticalBorderKey);
+    str += intersectionChar;
+    str += closeHighlighted(highlight, verticalBorderKey);
     return str;
 }
 
