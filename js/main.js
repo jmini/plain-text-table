@@ -459,9 +459,8 @@ function generateTable(highlight){
     var i, j, k, m, entry, item, height, mergedCellOffset, offsets, width, end;
 
     // top
-    if ('none' != border.horizontalTop) {
-        str += generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, -1);
-    }
+    str += generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, -1);
+
 
     // rows
     for (i = 0; i < data.vLen; i++) {
@@ -537,10 +536,8 @@ function generateTable(highlight){
 
         str += generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, i);
     }
-
-    // bottom
-    if ('none' != border.horizontalBottom) {
-        str += generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, i);
+    if(data.vLen == 0) {
+        str += generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, data.vLen);
     }
     $('#ptt-wrapper').html(str);
 }
@@ -769,8 +766,14 @@ function generateSeparationLine(data, widths, highlight, unicode, line, charset,
     
     if(i == -1) {
         horizontalBorderKey = 'horizontalTop';
-    } else if(i == data.vLen) {
+        if ('none' == border.horizontalTop) {
+            return str;
+        }
+    } else if(i >= data.vLen - 1) {
         horizontalBorderKey = 'horizontalBottom';
+        if ('none' == border.horizontalBottom) {
+            return str;
+        }
     } else {
         if(hasHorizontalInnerHeader(data, border, i, horizontalHeader)) {
             horizontalBorderKey = 'horizontalInnerHeader';
@@ -791,20 +794,22 @@ function generateSeparationLine(data, widths, highlight, unicode, line, charset,
         }
         str += generateIntersection(data, charset, border, highlight, horizontalHeader, verticalHeader, unicode, line, i, j);
     }
-    str += generateIntersection(data, charset, border, highlight, horizontalHeader, verticalHeader, unicode, line, i, j);
+    if(widths.length == 0) {
+        str += generateIntersection(data, charset, border, highlight, horizontalHeader, verticalHeader, unicode, line, i, widths.length);
+    }
     str += closeHighlighted(highlight, horizontalBorderKey);
     str += '\n';
     return str;
 }
 
 function generateIntersection(data, charset, border, highlight, horizontalHeader, verticalHeader, unicode, line, i, j) {
-    var top, bottom, left, right, horizontalBorderKey, verticalBorderKey, intersectionChar;
+    var top, bottom, left, right, horizontalBorderKey, item, verticalBorderKey, intersectionChar;
     var str = '';
     if(i == -1) {
         top = true;
         bottom = false;
         horizontalBorderKey = 'horizontalTop';
-    } else if(i == data.vLen) {
+    } else if(i >= data.vLen - 1) {
         top = false;
         bottom = true;
         horizontalBorderKey = 'horizontalBottom';
@@ -825,7 +830,7 @@ function generateIntersection(data, charset, border, highlight, horizontalHeader
         left = true;
         right = false;
         verticalBorderKey = 'verticalLeft';
-    } else if(j == data.hLen) {
+    } else if(j >= data.hLen - 1) {
         left = false;
         right = true;
         verticalBorderKey = 'verticalRight';
@@ -841,13 +846,40 @@ function generateIntersection(data, charset, border, highlight, horizontalHeader
         }
     }
     
-    //TODO: handle merged cell and modify the values of top, right, bottom, left.
+    //handle merged cells (modify the values of top, right, bottom, left):
+    if(!top && j >= 0) {
+        item = data.arr[i][j];
+        if(item.cell.y + item.cell.colspan - 1 > j) {
+            top = true;
+        }
+    }
+    if(!bottom && j >= 0) {
+        item = data.arr[i + 1][j];
+        if(item.cell.y + item.cell.colspan - 1 > j) {
+            bottom = true;
+        }
+    }
+    if(!left && i >= 0) {
+        item = data.arr[i][j];
+        if(item.cell.x + item.cell.rowspan - 1 > i) {
+            left = true;
+        }
+    }
+    if(!right && i >= 0) {
+        item = data.arr[i][j + 1];
+        if(item.cell.x + item.cell.rowspan - 1 > i) {
+            right = true;
+        }
+    }
     
     var horizontalBorder = border[horizontalBorderKey];
     var verticalBorder = border[verticalBorderKey];
     if('ascii' == charset) {
-        //TODO: due to merged cell, horizontal and vertical line exists and override user configuration.
-        if('horizontal_border' == border.asciiIntersection) {
+        if(top && !right && bottom && !left) {
+            intersectionChar = line.ascii[horizontalBorder].horizontal;
+        } else if(!top && right && !bottom && left) {
+            intersectionChar = line.ascii[verticalBorder].vertical;
+        } else if('horizontal_border' == border.asciiIntersection) {
             intersectionChar = line.ascii[horizontalBorder].horizontal;
         } else if('vertical_border' == border.asciiIntersection) {
             intersectionChar = line.ascii[verticalBorder].vertical;
@@ -865,7 +897,7 @@ function generateIntersection(data, charset, border, highlight, horizontalHeader
 }
 
 function hasHorizontalInnerHeader(data, border, i, horizontalHeader){
-    return ('none' != border.horizontalInnerHeader && 'none' != horizontalHeader && i == 0 && data.vLen > 0);
+    return ('none' != border.horizontalInnerHeader && 'none' != horizontalHeader && i == 0 && data.vLen > 1);
 }
 
 function hasHorizontalInner(data, border, i){
