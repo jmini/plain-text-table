@@ -455,24 +455,35 @@ function generateTable(highlight){
     var widths = getWidths(data, spacePadding);
     var heights = getHeights(data, spacePadding);
     var str = "";
-    var i, j, k, m, entry, item, offsets, end;
+    var i, j, k, m, entry, item, height, mergedCellOffset, offsets, width, end;
 
     // top
     if ('none' != border.horizontalTop) {
-        str += generateSeparationLine(widths, highlight, unicode, line, charset, verticalHeader, border, 'horizontalTop', true, false);
+        str += generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, -1);
     }
 
     // rows
-    for (i = 0; i < heights.length; i++) {
+    for (i = 0; i < data.vLen; i++) {
         offsets = [];
         for (j = 0; j < widths.length; j++) {
-            if('bottom' == data.arr[i][j].vAlign) {
-                offsets[j] = data.arr[i][j].pseudoRows.length - heights[i];
-            } else if ('middle' == data.arr[i][j].vAlign) {
-                offsets[j] = Math.ceil((data.arr[i][j].pseudoRows.length - heights[i]) / 2);
+            item = data.arr[data.arr[i][j].cell.x][data.arr[i][j].cell.y];
+            height = heights[item.cell.x];
+            mergedCellOffset = 0;
+            for(k = 1; k < item.cell.rowspan; k++) {
+                height += 1; //TODO: this depends of the border: use hasHorizontalInnerHeader() and hasHorizontalInner().
+                if(item.cell.x + k <= i) {
+                    mergedCellOffset = height;
+                }
+                height += heights[item.cell.x + k];
+            }
+            if('bottom' == item.vAlign) {
+                offsets[j] = item.pseudoRows.length - height;
+            } else if ('middle' == item.vAlign) {
+                offsets[j] = Math.ceil((item.pseudoRows.length - height) / 2);
             } else {
                 offsets[j] = 0;
             }
+            offsets[j] += mergedCellOffset;
         }
 
         for (m = 0; m < heights[i]; m++) {
@@ -480,16 +491,22 @@ function generateTable(highlight){
             str += line[charset][border.verticalLeft].vertical;
             str += closeHighlighted(highlight, 'verticalLeft');
             for (j = 0; j < widths.length; j++) {
-                item = data.arr[i][j];
+                item = data.arr[data.arr[i][j].cell.x][data.arr[i][j].cell.y];
+                width = widths[j];
+                for(k = 1; k < item.cell.colspan; k++) {
+                    j++;
+                    width += 1;
+                    width += widths[j];
+                }
                 if(item.empty) {
                     entry = '';
                 } else {
                     entry = item.pseudoRows[m + offsets[j]] || '';
                 }
-                if('right' == data.arr[i][j].hAlign) {
-                    end = widths[j] - entry.length;
-                } else if ('center' == data.arr[i][j].hAlign) {
-                    end = Math.floor((widths[j] - entry.length) / 2);
+                if('right' == item.hAlign) {
+                    end = width - entry.length;
+                } else if ('center' == item.hAlign) {
+                    end = Math.floor((width - entry.length) / 2);
                 } else {
                     end = 0;
                 }
@@ -497,11 +514,11 @@ function generateTable(highlight){
                     str += ' ';
                 }
                 str += entry;
-                end = widths[j] - entry.length - end;
+                end = width - entry.length - end;
                 for (k = 0; k < end; k++) {
                     str += ' ';
                 }
-                if ('none' != verticalHeader && j == 0 && heights.length > 0) {
+                if ('none' != verticalHeader && j == 0 && data.vLen > 0) {
                     str += openHighlighted(highlight, 'verticalInnerHeader');
                     str += line[charset][border.verticalInnerHeader].vertical;
                     str += closeHighlighted(highlight, 'verticalInnerHeader');
@@ -517,25 +534,21 @@ function generateTable(highlight){
             str += '\n';
         }
 
-        if ('none' != border.horizontalInnerHeader && 'none' != horizontalHeader && i == 0 && heights.length > 0) {
-            str += generateSeparationLine(widths, highlight, unicode, line, charset, verticalHeader, border, 'horizontalInnerHeader', false, false);
-        } else if('none' != border.horizontalInner && i < heights.length - 1) {
-            str += generateSeparationLine(widths, highlight, unicode, line, charset, verticalHeader, border, 'horizontalInner', false, false);
-        }
+        str += generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, i);
     }
 
     // bottom
     if ('none' != border.horizontalBottom) {
-        str += generateSeparationLine(widths, highlight, unicode, line, charset, verticalHeader, border, 'horizontalBottom', false, true);
+        str += generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, i);
     }
     $('#ptt-wrapper').html(str);
 }
 
 function extractData(spacePadding, horizontalHeader, verticalHeader){
-    var i, j, k, item, lines, w, meta, vAlign, hAlign, vLen, hLen;
+    var i, j, k, cell, item, lines, w, meta, vAlign, hAlign, vLen, hLen;
     var result = [];
-    var table = $('#table-wrapper');
-    var arr = table.handsontable('getData');
+    var table = $('#table-wrapper').handsontable('getInstance');
+    var arr = table.getData();
     var iOffset = 0;
     var jOffset = 0;
     for(i = 0; i < arr.length; i++) {
@@ -543,25 +556,41 @@ function extractData(spacePadding, horizontalHeader, verticalHeader){
             result.push([]);
             if('number' == verticalHeader || 'letter' == verticalHeader) {
                 //add an empty item that will be replaced later:
-                result[0][0] = {empty: true};
+                result[0][0] = {cell: {x: 0, y: 0, colspan: 1, rowspan: 1}, empty: true};
                 jOffset = 1;
             }
             for (j = 0; j < arr[i].length; j++) {
                 //add an empty item that will be replaced later:
-                result[0][j + jOffset] = {empty: true};
+                result[0][j + jOffset] = {cell: {x: 0, y: (j + jOffset), colspan: 1, rowspan: 1}, empty: true};
             }
             iOffset = 1;
         }
         result.push([]);
         if('number' == verticalHeader || 'letter' == verticalHeader) {
             //add an empty item that will be replaced later:
-            result[i + iOffset][0] = {empty: true};
+            result[i + iOffset][0] = {cell: {x: (i + iOffset), y: 0, colspan: 1, rowspan: 1}, empty: true};
             jOffset = 1;
         }
         for (j = 0; j < arr[i].length; j++) {
+            mergedData = table.mergeCells.mergedCellInfoCollection.getInfo(i, j);
+            if(mergedData) {
+                cell = {
+                    x: mergedData.row + iOffset,
+                    y: mergedData.col + jOffset,
+                    colspan: mergedData.colspan,
+                    rowspan: mergedData.rowspan
+                };
+            } else {
+                cell = {
+                    x: i + iOffset,
+                    y: j + jOffset,
+                    colspan: 1,
+                    rowspan: 1
+                };
+            }
             item = arr[i][j];
             if (! item) {
-                result[i + iOffset][j + jOffset] = {empty: true};
+                result[i + iOffset][j + jOffset] = {cell: cell, empty: true};
             } else {
                 w = 0;
                 lines = item.split('\n');
@@ -578,7 +607,7 @@ function extractData(spacePadding, horizontalHeader, verticalHeader){
                         w = lines[k].length;
                     }
                 }
-                meta = table.handsontable('getCellMeta', i, j);
+                meta = table.getCellMeta(i, j);
                 hAlign = 'left';
                 vAlign = 'top';
                 if(meta.className) {
@@ -595,7 +624,7 @@ function extractData(spacePadding, horizontalHeader, verticalHeader){
                         vAlign = 'bottom';
                     }
                 }
-                result[i + iOffset][j + jOffset] = {empty: false, pseudoRows: lines, maxWidth: w, vAlign: vAlign, hAlign: hAlign};
+                result[i + iOffset][j + jOffset] = {cell: cell, empty: false, pseudoRows: lines, maxWidth: w, vAlign: vAlign, hAlign: hAlign};
             }
         }
     }
@@ -606,7 +635,7 @@ function extractData(spacePadding, horizontalHeader, verticalHeader){
     }
     if('number' == horizontalHeader || 'letter' == horizontalHeader) {
         for (j = 0; j < hLen - jOffset; j++) {
-            result[0][j + jOffset] = generateHeader(horizontalHeader, spacePadding, j);
+            result[0][j + jOffset] = generateHeader(0, j + jOffset, horizontalHeader, spacePadding, j);
         }
     }
     if('none' != horizontalHeader) {
@@ -614,41 +643,49 @@ function extractData(spacePadding, horizontalHeader, verticalHeader){
     }
     if('number' == verticalHeader || 'letter' == verticalHeader) {
         for (i = 0; i < vLen - iOffset; i++) {
-            result[i + iOffset][0] = generateHeader(verticalHeader, spacePadding, i);
+            result[i + iOffset][0] = generateHeader(i + iOffset, 0, verticalHeader, spacePadding, i);
         }
     }
     return {arr: result, vLen: vLen, hLen: hLen};
 }
 
 function getVLen(arr, vMax, hMax){
-    var i, j, item;
-
+    var i, j, item, v;
+    var vLen = 0;
+    
     for (i = vMax; i >= 0; i--) {
         for (j = 0; j <= hMax; j++) {
             item = arr[i][j];
             if (!item.empty) {
-                return i + 1;
+                v = item.cell.x + item.cell.rowspan;
+                if(v > vLen) {
+                    vLen = v;
+                }
             }
         }
     }
-    return 0;
+    return vLen;
 }
 
 function getHLen(arr, vMax, hMax){
-    var i, j, item;
-
+    var i, j, item, h;
+    var hLen = 0;
+    
     for (j = hMax; j >= 0; j--) {
         for (i = 0; i <= vMax; i++) {
             item = arr[i][j];
             if (!item.empty) {
-                return j + 1;
+                h = item.cell.y + item.cell.colspan
+                if(h > hLen) {
+                    hLen = h;
+                }
             }
         }
     }
-    return 0;
+    return hLen;
 }
 
-function generateHeader(headerType, spacePadding, id) {
+function generateHeader(i, j, headerType, spacePadding, id) {
     var str = "";
     var num, s;
     if (spacePadding) {
@@ -668,7 +705,7 @@ function generateHeader(headerType, spacePadding, id) {
     if (spacePadding) {
         str += ' ';
     }
-    return {empty: false, pseudoRows: [str], maxWidth: str.length, vAlign: 'middle', hAlign: 'center'};
+    return {cell: {x: i, y: j, colspan: 1, rowspan: 1}, empty: false, pseudoRows: [str], maxWidth: str.length, vAlign: 'middle', hAlign: 'center'};
 }
 
 function getWidths(data, spacePadding){
@@ -683,13 +720,18 @@ function getWidths(data, spacePadding){
         for (i = 0; i < data.vLen; i++) {
             item = data.arr[i][j];
             if (!item.empty) {
-                if (item.maxWidth > w) {
-                    w = item.maxWidth;
+                if(item.cell.colspan == 1 && item.cell.rowspan == 1) {
+                    if (item.maxWidth > w) {
+                        w = item.maxWidth;
+                    }
+                } else {
+                    //TODO: add to mergedCells if not yet added.
                 }
             }
         }
         widths[j] = w;
     }
+    //TODO: handle mergedCells.
     return widths;
 }
 
@@ -703,21 +745,49 @@ function getHeights(data, spacePadding){
             h = 1;
         }
         for (j = 0; j < data.hLen; j++) {
-            item = data.arr[i][j];
+            item = data.arr[data.arr[i][j].cell.x][data.arr[i][j].cell.y];
             if (!item.empty) {
-                if (item.pseudoRows.length > h) {
-                    h = item.pseudoRows.length;
+                if(item.cell.colspan == 1 && item.cell.rowspan == 1) {
+                    if (item.pseudoRows.length > h) {
+                        h = item.pseudoRows.length;
+                    }
+                } else {
+                    //TODO: add to mergedCells if not yet added.
                 }
             }
         }
         heights[i] = h;
     }
+    //TODO: handle mergedCells.
     return heights;
 }
 
-function generateSeparationLine(widths, highlight, unicode, line, charset, verticalHeader, border, horizontalBorderKey, top, bottom){
+function generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, i){
     var j, k, leftChar, innerHeaderChar, innerChar, rightChar;
+
+    var top, bottom;
+    if(i == -1) {
+        top = true;
+        bottom = false;
+        horizontalBorderKey = 'horizontalTop';
+    } else if(i == data.vLen) {
+        top = false;
+        bottom = true;
+        horizontalBorderKey = 'horizontalBottom';
+    } else {
+        top = false;
+        bottom = false;
+        if(hasHorizontalInnerHeader(data, border, i, horizontalHeader)) {
+            horizontalBorderKey = 'horizontalInnerHeader';
+        } else if(hasHorizontalInner(data, border, i)){
+            horizontalBorderKey = 'horizontalInner';
+        } else {
+            return '';
+        }
+    }
+
     var horizontalBorder = border[horizontalBorderKey];
+
     if('ascii' == charset) {
         if('horizontal_border' == border.asciiIntersection) {
             leftChar = line.ascii[horizontalBorder].horizontal;
@@ -769,6 +839,14 @@ function generateSeparationLine(widths, highlight, unicode, line, charset, verti
     str += closeHighlighted(highlight, horizontalBorderKey);
     str += '\n';
     return str;
+}
+
+function hasHorizontalInnerHeader(data, border, i, horizontalHeader){
+    return ('none' != border.horizontalInnerHeader && 'none' != horizontalHeader && i == 0 && data.vLen > 0);
+}
+
+function hasHorizontalInner(data, border, i){
+    return ('none' != border.horizontalInner && i < data.vLen - 1)
 }
 
 function openHighlighted(highlight, key){
