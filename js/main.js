@@ -275,7 +275,7 @@ function predefinedStyle(value){
         $('#vertical_inner_border').val('single');
         $('#vertical_right_border').val('double');
         $('#ascii_intersection').val('plus');
-        $('#spacePadding').prop('checked', true)
+        $('#spacePadding').prop('checked', true);
     }
     updateAsciiIntersectionVisibility(document.getElementById("charset").value);
     updateHorizontalInnerHeaderBorderVisibility(document.getElementById("horizontal_header").value);
@@ -438,7 +438,7 @@ function generateTable(highlight){
                 horizontal: unicode.none.double.none.double
             }
         }
-    }
+    };
     var spacePadding = document.getElementById("spacePadding").checked;
     
     var charset = document.getElementById("charset").value;
@@ -458,13 +458,13 @@ function generateTable(highlight){
         verticalRight: document.getElementById("vertical_right_border").value,
         
         asciiIntersection: document.getElementById("ascii_intersection").value
-    }
+    };
     
     var data = extractData(spacePadding, horizontalHeader, verticalHeader);
     var widths = getWidths(data, spacePadding);
     var heights = getHeights(data, spacePadding);
     var str = "";
-    var i, j, k, m, entry, item, height, mergedCellOffset, offsets, width, end;
+    var i, j, m, offsets;
 
     // top
     str += generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, -1);
@@ -474,24 +474,7 @@ function generateTable(highlight){
     for (i = 0; i < data.vLen; i++) {
         offsets = [];
         for (j = 0; j < widths.length; j++) {
-            item = data.arr[data.arr[i][j].cell.x][data.arr[i][j].cell.y];
-            height = heights[item.cell.x];
-            mergedCellOffset = 0;
-            for(k = 1; k < item.cell.rowspan; k++) {
-                height += 1; //TODO: this depends of the border: use hasHorizontalInnerHeader() and hasHorizontalInner().
-                if(item.cell.x + k <= i) {
-                    mergedCellOffset = height;
-                }
-                height += heights[item.cell.x + k];
-            }
-            if('bottom' == item.vAlign) {
-                offsets[j] = item.pseudoRows.length - height;
-            } else if ('middle' == item.vAlign) {
-                offsets[j] = Math.ceil((item.pseudoRows.length - height) / 2);
-            } else {
-                offsets[j] = 0;
-            }
-            offsets[j] += mergedCellOffset;
+            offsets[j] = calculateOffset(data, heights, i, j);
         }
 
         for (m = 0; m < heights[i]; m++) {
@@ -499,33 +482,7 @@ function generateTable(highlight){
             str += line[charset][border.verticalLeft].vertical;
             str += closeHighlighted(highlight, 'verticalLeft');
             for (j = 0; j < widths.length; j++) {
-                item = data.arr[data.arr[i][j].cell.x][data.arr[i][j].cell.y];
-                width = widths[j];
-                for(k = 1; k < item.cell.colspan; k++) {
-                    j++;
-                    width += 1;
-                    width += widths[j];
-                }
-                if(item.empty) {
-                    entry = '';
-                } else {
-                    entry = item.pseudoRows[m + offsets[j]] || '';
-                }
-                if('right' == item.hAlign) {
-                    end = width - entry.length;
-                } else if ('center' == item.hAlign) {
-                    end = Math.floor((width - entry.length) / 2);
-                } else {
-                    end = 0;
-                }
-                for (k = 0; k < end; k++) {
-                    str += ' ';
-                }
-                str += escapeHTMLEntities(entry);
-                end = width - entry.length - end;
-                for (k = 0; k < end; k++) {
-                    str += ' ';
-                }
+                str += generateCellContent(data, offsets[j], widths, i, j, m);
                 if ('none' != verticalHeader && j == 0 && data.vLen > 0) {
                     str += openHighlighted(highlight, 'verticalInnerHeader');
                     str += line[charset][border.verticalInnerHeader].vertical;
@@ -551,7 +508,7 @@ function generateTable(highlight){
 }
 
 function extractData(spacePadding, horizontalHeader, verticalHeader){
-    var i, j, k, cell, item, lines, w, meta, vAlign, hAlign, vLen, hLen;
+    var i, j, k, cell, item, lines, w, meta, vAlign, hAlign, vLen, hLen, mergedData;
     var result = [];
     var table = $('#table-wrapper').handsontable('getInstance');
     var arr = table.getData();
@@ -681,7 +638,7 @@ function getHLen(arr, vMax, hMax){
         for (i = 0; i <= vMax; i++) {
             item = arr[i][j];
             if (!item.empty) {
-                h = item.cell.y + item.cell.colspan
+                h = item.cell.y + item.cell.colspan;
                 if(h > hLen) {
                     hLen = h;
                 }
@@ -769,7 +726,7 @@ function getHeights(data, spacePadding){
 }
 
 function generateSeparationLine(data, widths, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, i){
-    var j, k;
+    var j, k, horizontalBorderKey;
     var str = '';
     
     if(i == -1) {
@@ -904,12 +861,67 @@ function generateIntersection(data, charset, border, highlight, horizontalHeader
     return str;
 }
 
+function calculateOffset(data, heights, i, j){
+    var offset, item, height, k;
+    offset = 0;
+    item = data.arr[data.arr[i][j].cell.x][data.arr[i][j].cell.y];
+    height = heights[item.cell.x];
+    for(k = 1; k < item.cell.rowspan; k++) {
+        height += 1; //TODO: this depends of the border: use hasHorizontalInnerHeader() and hasHorizontalInner().
+        if(item.cell.x + k <= i) {
+            offset = height;
+        }
+        height += heights[item.cell.x + k];
+    }
+    if('bottom' == item.vAlign) {
+        offset += item.pseudoRows.length - height;
+    } else if ('middle' == item.vAlign) {
+        offset += Math.ceil((item.pseudoRows.length - height) / 2);
+    } else {
+        offset += 0;
+    }
+    return offset;
+}
+
+function generateCellContent(data, offset, widths, i, j, m){
+    var item, width, k, entry, end;
+    var str = '';
+    item = data.arr[data.arr[i][j].cell.x][data.arr[i][j].cell.y];
+    width = widths[j];
+    for(k = 1; k < item.cell.colspan; k++) {
+        j++;
+        width += 1;
+        width += widths[j];
+    }
+    if(item.empty) {
+        entry = '';
+    } else {
+        entry = item.pseudoRows[m + offset] || '';
+    }
+    if('right' == item.hAlign) {
+        end = width - entry.length;
+    } else if ('center' == item.hAlign) {
+        end = Math.floor((width - entry.length) / 2);
+    } else {
+        end = 0;
+    }
+    for (k = 0; k < end; k++) {
+        str += ' ';
+    }
+    str += escapeHTMLEntities(entry);
+    end = width - entry.length - end;
+    for (k = 0; k < end; k++) {
+        str += ' ';
+    }
+    return str;
+}
+
 function hasHorizontalInnerHeader(data, border, i, horizontalHeader){
     return ('none' != border.horizontalInnerHeader && 'none' != horizontalHeader && i == 0 && data.vLen > 1);
 }
 
 function hasHorizontalInner(data, border, i){
-    return ('none' != border.horizontalInner && i < data.vLen - 1)
+    return ('none' != border.horizontalInner && i < data.vLen - 1);
 }
 
 function openHighlighted(highlight, key){
