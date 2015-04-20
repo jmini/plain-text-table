@@ -462,7 +462,7 @@ function generateTable(highlight){
     
     var data = extractData(spacePadding, horizontalHeader, verticalHeader);
     var widths = getWidths(data, spacePadding);
-    var heights = getHeights(data, spacePadding);
+    var heights = getHeights(data, border, horizontalHeader, spacePadding);
     var str = "";
     var i, j, m, offsets;
 
@@ -674,7 +674,8 @@ function generateHeader(i, j, headerType, spacePadding, id) {
 
 function getWidths(data, spacePadding){
     var widths = [];
-    var i, j, w, item;
+    var mergedCells = [];
+    var i, j, w, item, m, a;
 
     for (j = 0; j < data.hLen; j++) {
         w = 0;
@@ -688,20 +689,47 @@ function getWidths(data, spacePadding){
                     if (item.maxWidth > w) {
                         w = item.maxWidth;
                     }
-                } else {
-                    //TODO: add to mergedCells if not yet added.
+                } else if(i == item.cell.x && j == item.cell.y) {
+                    mergedCells.push(item);
                 }
             }
         }
         widths[j] = w;
     }
-    //TODO: handle mergedCells.
+    if(mergedCells.length > 0) {
+        m = findNotFittingMergedCellWithWidths(mergedCells, widths);
+        while(m.hasNext) {
+            a = divideAsArray(m.len, m.item.cell.colspan);
+            for (j = 0; j < m.item.cell.colspan; j++) {
+                widths[m.item.cell.y + j] += a[j];
+            }
+            m = findNotFittingMergedCellWithWidths(mergedCells, widths)
+        }
+    }
     return widths;
 }
 
-function getHeights(data, spacePadding){
+function findNotFittingMergedCellWithWidths(mergedCells, widths) {
+    var k, item, width, w;
+    var match = {hasNext: true, len: 0};
+    for (k = 0; k < mergedCells.length; k++) {
+        item = mergedCells[k];
+        width = calculateWidth(widths, item);
+        w = item.maxWidth - width;
+        if(w > match.len) {
+            match = {hasNext: true, len: w, item: item};
+        }
+    }
+    if(match.len > 0) {
+        return match;
+    }
+    return {hasNext: false};
+}
+
+function getHeights(data, border, horizontalHeader, spacePadding){
     var heights = [];
-    var i, j, h, item;
+    var mergedCells = [];
+    var i, j, h, item, m, a;
 
     for (i = 0; i < data.vLen; i++) {
         h = 0;
@@ -715,15 +743,41 @@ function getHeights(data, spacePadding){
                     if (item.pseudoRows.length > h) {
                         h = item.pseudoRows.length;
                     }
-                } else {
-                    //TODO: add to mergedCells if not yet added.
+                } else if(i == item.cell.x && j == item.cell.y) {
+                    mergedCells.push(item);
                 }
             }
         }
         heights[i] = h;
     }
-    //TODO: handle mergedCells.
+    if(mergedCells.length > 0) {
+        m = findNotFittingMergedCellWithHeights(data, border, horizontalHeader, mergedCells, heights);
+        while(m.hasNext) {
+            a = divideAsArray(m.len, m.item.cell.rowspan);
+            for (i = 0; i < m.item.cell.rowspan; i++) {
+                heights[m.item.cell.x + i] += a[i];
+            }
+            m = findNotFittingMergedCellWithHeights(data, border, horizontalHeader, mergedCells, heights)
+        }
+    }
     return heights;
+}
+
+function findNotFittingMergedCellWithHeights(data, border, horizontalHeader, mergedCells, heights) {
+    var k, item, height, h;
+    var match = {hasNext: true, len: 0};
+    for (k = 0; k < mergedCells.length; k++) {
+        item = mergedCells[k];
+        height = calcultateHeight(data, border, horizontalHeader, heights, item, 0).height;
+        h = item.pseudoRows.length - height;
+        if(h > match.len) {
+            match = {hasNext: true, len: h, item: item};
+        }
+    }
+    if(match.len > 0) {
+        return match;
+    }
+    return {hasNext: false};
 }
 
 function generateSeparationLine(data, widths, heights, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, i){
@@ -875,9 +929,23 @@ function generateIntersection(data, charset, border, highlight, horizontalHeader
 }
 
 function calculateOffset(data, heights, border, horizontalHeader, i, j){
-    var offset, item, height, k;
-    offset = 0;
+    var offset, item, calc;
     item = data.arr[data.arr[i][j].cell.x][data.arr[i][j].cell.y];
+    calc = calcultateHeight(data, border, horizontalHeader, heights, item, i)
+    offset = calc.offset;
+    if('bottom' == item.vAlign) {
+        offset += item.pseudoRows.length - calc.height;
+    } else if ('middle' == item.vAlign) {
+        offset += Math.ceil((item.pseudoRows.length - calc.height) / 2);
+    } else {
+        offset += 0;
+    }
+    return offset;
+}
+
+function calcultateHeight(data, border, horizontalHeader, heights, item, i) {
+    var offset, height, k;
+    offset = 0;
     height = heights[item.cell.x];
     for(k = 1; k < item.cell.rowspan; k++) {
         height += (hasHorizontalInnerHeader(data, border, item.cell.x + k - 1, horizontalHeader) || hasHorizontalInner(data, border, item.cell.x + k - 1)) ? 1 : 0;
@@ -886,25 +954,14 @@ function calculateOffset(data, heights, border, horizontalHeader, i, j){
         }
         height += heights[item.cell.x + k];
     }
-    if('bottom' == item.vAlign) {
-        offset += item.pseudoRows.length - height;
-    } else if ('middle' == item.vAlign) {
-        offset += Math.ceil((item.pseudoRows.length - height) / 2);
-    } else {
-        offset += 0;
-    }
-    return offset;
+    return {height: height, offset: offset};
 }
 
 function generateCellContent(data, offset, widths, i, j){
     var item, width, k, entry, end;
     var str = '';
     item = data.arr[data.arr[i][j].cell.x][data.arr[i][j].cell.y];
-    width = widths[j];
-    for(k = 1; k < item.cell.colspan; k++) {
-        width += 1;
-        width += widths[j + k];
-    }
+    width = calculateWidth(widths, item);
     if(item.empty) {
         entry = '';
     } else {
@@ -926,6 +983,16 @@ function generateCellContent(data, offset, widths, i, j){
         str += ' ';
     }
     return str;
+}
+
+function calculateWidth(widths, item) {
+    var width, k;
+    width = widths[item.cell.y];
+    for(k = 1; k < item.cell.colspan; k++) {
+        width += 1;
+        width += widths[item.cell.y + k];
+    }
+    return width;
 }
 
 function hasHorizontalInnerHeader(data, border, i, horizontalHeader){
@@ -950,6 +1017,18 @@ function closeHighlighted(highlight, key){
     } else {
         return '';
     }
+}
+
+function divideAsArray(number, size){
+    var k, r;
+    var result = [];
+    var nb = number;
+    for (k = 0; k < size; k++) {
+        r = Math.ceil(nb / (size - k));
+        result[k] = r;
+        nb = nb - r;
+    }
+    return result;
 }
 
 function escapeHTMLEntities(text) {
