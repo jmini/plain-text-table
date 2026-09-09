@@ -103,6 +103,10 @@ function borderSelectLostFocus(cbbox) {
 }
 
 function predefinedStyle(value) {
+    //the Ascii charset removes the 'double' option of the vertical borders, it is put
+    //back before the values below are set, otherwise a style asking for a double
+    //vertical border would silently not be applied:
+    updateAsciiIntersectionVisibility('unicode');
     if ('unicode2' == value) {
         $('#charset').val('unicode');
         $('#horizontal_header').val('first_line');
@@ -280,6 +284,420 @@ function predefinedStyle(value) {
 
 function genPTT() {
     generateTable(null);
+}
+
+var configurationFields = [
+    'charset',
+    'horizontal_header',
+    'vertical_header',
+    'horizontal_top_border',
+    'horizontal_inner_header_border',
+    'horizontal_inner_border',
+    'horizontal_bottom_border',
+    'vertical_left_border',
+    'vertical_inner_header_border',
+    'vertical_inner_border',
+    'vertical_right_border',
+    'ascii_intersection'
+];
+
+function readConfiguration() {
+    var i, id;
+    var configuration = {};
+    for (i = 0; i < configurationFields.length; i++) {
+        id = configurationFields[i];
+        configuration[id] = $('#' + id).val();
+    }
+    configuration.spacePadding = $('#spacePadding').prop('checked');
+    return configuration;
+}
+
+function applyConfiguration(configuration) {
+    var i, id;
+    if (hasOption('charset', configuration.charset)) {
+        $('#charset').val(configuration.charset);
+    }
+    //the Ascii charset removes the 'double' option of the vertical borders,
+    //so the available options must be updated before the border values are set:
+    updateAsciiIntersectionVisibility(document.getElementById("charset").value);
+    for (i = 1; i < configurationFields.length; i++) {
+        id = configurationFields[i];
+        //a value that the select does not offer is ignored, so that a link with an
+        //unknown or impossible combination does not leave the select without value:
+        if (hasOption(id, configuration[id])) {
+            $('#' + id).val(configuration[id]);
+        }
+    }
+    $('#spacePadding').prop('checked', false !== configuration.spacePadding);
+    updateHorizontalInnerHeaderBorderVisibility(document.getElementById("horizontal_header").value);
+    updateVerticalInnerHeaderBorderVisibility(document.getElementById("vertical_header").value);
+}
+
+function hasOption(id, value) {
+    var i;
+    var options = document.getElementById(id).options;
+    for (i = 0; i < options.length; i++) {
+        if (options[i].value === value) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function readState() {
+    var i, info;
+    var table = $('#table-wrapper').handsontable('getInstance');
+    var collection = table.mergeCells.mergedCellInfoCollection;
+    var mergeCells = [];
+    for (i = 0; i < collection.length; i++) {
+        info = collection[i];
+        mergeCells.push({
+            row: info.row,
+            col: info.col,
+            rowspan: info.rowspan,
+            colspan: info.colspan
+        });
+    }
+    return {
+        data: table.getData(),
+        mergeCells: mergeCells,
+        alignments: readAlignments(table),
+        configuration: readConfiguration()
+    };
+}
+
+//the text alignment set with the context menu is kept in the cell meta of the table,
+//it is collected as a '<row>,<column>' map, since most cells have no alignment at all:
+function readAlignments(table) {
+    var i, j, meta;
+    var alignments = {};
+    var arr = table.getData();
+    for (i = 0; i < arr.length; i++) {
+        for (j = 0; j < arr[i].length; j++) {
+            meta = table.getCellMeta(i, j);
+            if (meta.className) {
+                alignments[i + ',' + j] = meta.className;
+            }
+        }
+    }
+    return alignments;
+}
+
+function resetAlignments(table) {
+    var i, j;
+    var arr = table.getData();
+    for (i = 0; i < arr.length; i++) {
+        for (j = 0; j < arr[i].length; j++) {
+            if (table.getCellMeta(i, j).className) {
+                table.setCellMeta(i, j, 'className', '');
+            }
+        }
+    }
+}
+
+function applyAlignments(table, alignments) {
+    var key, position;
+    for (key in alignments) {
+        if (alignments.hasOwnProperty(key)) {
+            position = key.split(',');
+            table.setCellMeta(Number(position[0]), Number(position[1]), 'className', alignments[key]);
+        }
+    }
+}
+
+function applyState(state) {
+    var i, info;
+    var table = $('#table-wrapper').handsontable('getInstance');
+    var collection = table.mergeCells.mergedCellInfoCollection;
+    if (state.configuration) {
+        applyConfiguration(state.configuration);
+    }
+    //the merged cells of the previous content are dropped before the new data is loaded,
+    //otherwise they could point outside of the new grid:
+    collection.splice(0, collection.length);
+    table.loadData(copyData(state.data));
+    //the alignments are reset and not only added, otherwise the ones of the previous
+    //content would stay on the cells the new one does not mention:
+    resetAlignments(table);
+    if (state.alignments) {
+        applyAlignments(table, state.alignments);
+    }
+    if (state.mergeCells) {
+        for (i = 0; i < state.mergeCells.length; i++) {
+            info = state.mergeCells[i];
+            //the collection takes ownership of the objects it is given, so a copy is stored:
+            collection.setInfo({
+                row: info.row,
+                col: info.col,
+                rowspan: info.rowspan,
+                colspan: info.colspan
+            });
+        }
+    }
+    table.render();
+    //the location already describes the state that was just applied:
+    cancelSharedLocationUpdate();
+}
+
+function copyData(data) {
+    var i;
+    var result = [];
+    for (i = 0; i < data.length; i++) {
+        result.push(data[i].slice());
+    }
+    return result;
+}
+
+//Reads back a table pasted in the "Text" tab and puts it in the grid:
+function readTextInput() {
+    var result = plainTextTableParser.parse($('#text-input').val());
+    if (result.error) {
+        showTextInputFeedback(result.error);
+        return;
+    }
+    //the grid is shown before it is filled: Handsontable measures the room it has when
+    //it draws, and a hidden tab gives it none:
+    $('.nav-tabs a[href="#grid-tab"]').tab('show');
+    applyState({
+        data: result.data,
+        mergeCells: result.mergeCells,
+        alignments: {},
+        configuration: result.configuration
+    });
+    showTextInputFeedback(describeTable(result));
+}
+
+function describeTable(result) {
+    var columns = result.data.length > 0 ? result.data[0].length : 0;
+    var message = 'Read ' + result.data.length + ' rows and ' + columns + ' columns';
+    if (result.mergeCells.length > 0) {
+        message += ', ' + result.mergeCells.length + ' merged cells';
+    }
+    return message + '.';
+}
+
+//Puts the current output in the text area, as a starting point to edit it by hand:
+function fillTextInput() {
+    $('#text-input').val($('#ptt-wrapper').text());
+    showTextInputFeedback('');
+}
+
+var textInputFeedbackTimeout = null;
+
+function showTextInputFeedback(message) {
+    $('#text-input-feedback').text(message);
+    if (textInputFeedbackTimeout) {
+        clearTimeout(textInputFeedbackTimeout);
+    }
+    textInputFeedbackTimeout = setTimeout(function() {
+        $('#text-input-feedback').text('');
+    }, 5000);
+}
+
+//Empties the grid, keeping the style that is configured:
+function clearTable() {
+    var i, j;
+    var data = [];
+    for (i = 0; i < 5; i++) {
+        data.push([]);
+        for (j = 0; j < 5; j++) {
+            data[i].push('');
+        }
+    }
+    applyState({
+        data: data,
+        mergeCells: [],
+        alignments: {}
+    });
+}
+
+function clearTextInput() {
+    $('#text-input').val('');
+    showTextInputFeedback('');
+}
+
+//The table is kept in the local storage of the browser, so that it survives a reload.
+//It never leaves the browser, exactly like the rest of what the tool does.
+var storageKey = 'plain-text-table.state';
+var storageTimeout = null;
+
+function saveStateLater() {
+    if (storageTimeout) {
+        clearTimeout(storageTimeout);
+    }
+    //the table is re-rendered at each key stroke, so the write is delayed:
+    storageTimeout = setTimeout(saveState, 500);
+}
+
+function saveState() {
+    storageTimeout = null;
+    try {
+        window.localStorage.setItem(storageKey, JSON.stringify(readState()));
+    } catch (e) {
+        //the storage can be disabled or full, the tool works without it
+    }
+}
+
+function loadStoredState() {
+    var stored = null;
+    try {
+        stored = window.localStorage.getItem(storageKey);
+    } catch (e) {
+        return false;
+    }
+    if (!stored) {
+        return false;
+    }
+    try {
+        applyState(JSON.parse(stored));
+        return true;
+    } catch (e) {
+        console.log('The table of the previous visit could not be read: ' + e.message);
+        return false;
+    }
+}
+
+var sharePrefix = 'ptt:';
+
+function shareLink() {
+    var json = JSON.stringify(readState());
+    var payload = toBase64Url(pako.deflate(json));
+    return window.location.href.split('#')[0] + '#' + sharePrefix + payload;
+}
+
+var sharedLocationTimeout = null;
+
+//when the location holds a shared table, it keeps following the changes made to the
+//table, so that the address bar always contains a link to what is on the screen.
+//A page opened without a shared table keeps a clean address bar until the user asks
+//for a link with the button:
+function updateSharedLocation() {
+    if (!isSharedLocation()) {
+        return;
+    }
+    cancelSharedLocationUpdate();
+    //the table is re-rendered at each key stroke, so the update is delayed:
+    sharedLocationTimeout = setTimeout(function() {
+        sharedLocationTimeout = null;
+        if (isSharedLocation()) {
+            writeSharedLocation();
+        }
+    }, 500);
+}
+
+function cancelSharedLocationUpdate() {
+    if (sharedLocationTimeout) {
+        clearTimeout(sharedLocationTimeout);
+        sharedLocationTimeout = null;
+    }
+}
+
+function isSharedLocation() {
+    return 0 === window.location.hash.indexOf('#' + sharePrefix);
+}
+
+function writeSharedLocation() {
+    //replaceState() does not fire the hashchange event, so the table is not reloaded:
+    if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', shareLink());
+    }
+}
+
+function loadSharedState() {
+    var hash = window.location.hash;
+    if (0 !== hash.indexOf('#' + sharePrefix)) {
+        return false;
+    }
+    try {
+        var bytes = fromBase64Url(hash.substring(sharePrefix.length + 1));
+        applyState(JSON.parse(pako.inflate(bytes, {
+            to: 'string'
+        })));
+        return true;
+    } catch (e) {
+        console.log('The shared table could not be read from the link: ' + e.message);
+        return false;
+    }
+}
+
+function toBase64Url(bytes) {
+    var i;
+    var binary = '';
+    for (i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function fromBase64Url(text) {
+    var i;
+    var base64 = text.replace(/-/g, '+').replace(/_/g, '/');
+    while (0 !== base64.length % 4) {
+        base64 += '=';
+    }
+    var binary = atob(base64);
+    var bytes = new Uint8Array(binary.length);
+    for (i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
+}
+
+function copyShareLink() {
+    var link = shareLink();
+    cancelSharedLocationUpdate();
+    if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', link);
+    } else {
+        window.location.hash = link.split('#')[1];
+    }
+    copyToClipboard(link, 'Link copied!');
+}
+
+function copyOutput() {
+    copyToClipboard($('#ptt-wrapper').text(), 'Copied!');
+}
+
+function copyToClipboard(text, message) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+            showCopyFeedback(message);
+        }, function() {
+            copyToClipboardFallback(text, message);
+        });
+    } else {
+        copyToClipboardFallback(text, message);
+    }
+}
+
+function copyToClipboardFallback(text, message) {
+    var copied = false;
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+        copied = document.execCommand('copy');
+    } catch (e) {
+        copied = false;
+    }
+    document.body.removeChild(textarea);
+    showCopyFeedback(copied ? message : 'Copy failed, select the text and press Ctrl+C.');
+}
+
+var copyFeedbackTimeout = null;
+
+function showCopyFeedback(message) {
+    $('#copy-feedback').text(message);
+    if (copyFeedbackTimeout) {
+        clearTimeout(copyFeedbackTimeout);
+    }
+    copyFeedbackTimeout = setTimeout(function() {
+        $('#copy-feedback').text('');
+    }, 3000);
 }
 
 function generateTable(highlight) {
@@ -501,6 +919,8 @@ function generateTable(highlight) {
         str += generateSeparationLine(data, widths, heights, highlight, unicode, line, charset, horizontalHeader, verticalHeader, border, data.vLen);
     }
     $('#ptt-wrapper').html(str);
+    updateSharedLocation();
+    saveStateLater();
 }
 
 function extractData(spacePadding, horizontalHeader, verticalHeader) {
@@ -1102,3 +1522,36 @@ function escapeHTMLEntities(text) {
         return '&#' + c.charCodeAt(0) + ';';
     });
 }
+
+(function() {
+    "use strict";
+
+    //A grid drawn while its tab is hidden gets no room to measure itself: it stays
+    //squeezed to its smallest size and its wrapper keeps no height, which lets the rest
+    //of the page overlap it. Drawing it again once the tab is visible fixes both.
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function(event) {
+        if ('#grid-tab' === $(event.target).attr('href')) {
+            $('#table-wrapper').handsontable('getInstance').render();
+        }
+    });
+
+    //the example links of the page are shared links, following them only changes the
+    //hash, the browser does not reload the page:
+    $(window).on('hashchange', function() {
+        loadSharedState();
+    });
+
+    //a link pointing to the table that is already displayed changes nothing in the
+    //location, so the hashchange event does not fire and the state is applied here:
+    $(document).on('click', 'a[href^="#' + sharePrefix + '"]', function() {
+        if (window.location.hash === this.hash) {
+            loadSharedState();
+        }
+    });
+
+    //this block is at the end of the file, so that the variables it needs are assigned.
+    //A shared link wins over the stored table, it is what the visitor asked to see:
+    if (!loadSharedState()) {
+        loadStoredState();
+    }
+})();

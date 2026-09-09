@@ -39,9 +39,9 @@
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-              <li class="active"><a href="/">Home</a></li>
-              <li><a href="https://github.com/lorefnon/plain-text-table"><img src="https://raw.github.com/lorefnon/plain-text-table/gh-pages/img/github.png"> Source Code </a></li>
-              <li><a href="https://github.com/lorefnon/plain-text-table/issues"><img src="https://raw.github.com/lorefnon/plain-text-table/gh-pages/img/bugs.png"> Issues </a></li>
+              <li class="active"><a href="./">Home</a></li>
+              <li><a href="https://github.com/jmini/plain-text-table"><img src="img/github.png"> Source Code </a></li>
+              <li><a href="https://github.com/jmini/plain-text-table/issues"><img src="img/bugs.png"> Issues </a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
               <li><a href="http://twitter.com/j2r2b">@j2r2b</a></li>
@@ -51,31 +51,67 @@
         </nav>
 
         <div class="container">
-            <div class="jumbotron">
-                <h1> Plain Text Table </h1>
-                <h2> Interactively create and edit tables and export them to plain text </h2>
+            <div class="page-header">
+                <h1> Plain Text Table <small> Interactively create and edit tables and export them to plain text </small></h1>
             </div>
 
             <h2> Huh ? </h2>
 
             <p>
                 At a lot of places, like Stackoverflow questions/answers, source code
-                comments, plain text emails etc. HTML tables are not an option. We can
-                always format ascii characters to simulate tables but unless you are a
-                ninja with keyboard, doing so is a headache.
+                comments, plain text emails, LLM prompts or coding agents like Claude Code
+                etc. HTML tables are not an option. We can always format ascii characters
+                to simulate tables but unless you are a ninja with keyboard, doing so is a
+                headache.
             </p>
             <p>
                 This web based tool provides a dead simple way for doing just that - sans
-                the PITA.
+                the PITA. One of the predefined styles produces the table syntax of
+                Markdown, ready to be pasted in a <code>README.md</code>, in an issue or
+                in a prompt.
             </p>
+
+            <p> Nothing to type in? Load an example table: </p>
+            <ul>
+                <li><a href="#ptt:eJyNkEFPwzAMhf_K5HMvwBDQGwwhcUFIcJumyU3cxmqaTImLBNP-O-46pmkqiIub1_f5xfEWLApCuVzCC3YEBTxxyjI7iPeEpp09Wz0uHJmWLKyKJbw5qmsmP_y_92wG9Gp-o_WT8kh0LE71Q6y0Xlxfah0N7HIMqh7ZtPq5m9_-tK0K6Cg1tCDvs46kGj03oaMgqre7AkwMNTd9QmENKbdgHKZMAiVgNswa5WLirxgE_doRWkrq1cOb1p7DMOgHJWFzaoe4N046JW7WVUyjbWNf-TOAQ6B0SPgPeUQyh-YcqaJI7CZijqN6qmUi4-hPj_Mb9weQuHFTN-23q-1Cum4zbh82vs_q5Q0aekVrFYZSUk-73Te2gdDa">contact list</a>: a simple table with an Ascii output.</li>
+                <li><a href="#ptt:eJyNksFu2zAMhl8l0NmXOOlhvgxdigEFOqwYsvWQBYEiMTYxmTIoaW0X-N1Hwa7Tpd06wJB_kZ_407SOyuqoVbXZqLvGv1eFWnkL8vrkyepHEesEYVB3YOlJr5vEo_zImMW22Kg16HZ2KbFyIcste6QZ2hklMrIfHsGpRue06BvP0H6n6y6k9lTgg2SWmQRugaKkCnVJEWbXHYZh10Icqt08_ginkyuJXJS5e4gpzOBB5NWDv88R7SAkbbPtt-S6FHXM3_lVOmmN5w74VOdKEvN3snxm0gyD1RrJoE00On-5B7XdFqoFrmEFzgWZ4lGxuFXzQhnvVFUWeR86TU-xQS_6YiTLkVz-hSwncjGSF8_I8hk5n8jlG-5lL21rhzXl8Urbxz5n6YB1Yh3RC3NUptEcZMyVSoRmuBSNZ_zlKWq3a0BbGVmlDsgh7hxSBn4CRzQv0-KdWvqzQvTdbu95wKxPe3dmgUTAY6X_ISckyA07R_Y-Rt--UmZq2cEh_iv_Rjtn3MtmJoCxbl5z0sEgyvEIMngz_AfVuRQkJ3_OwK22VqqpKnKCvv8NAYBA9g">weekly schedule</a>: merged and multiline cells with a Unicode output.</li>
+                <li><a href="#ptt:eJyFkE9vwjAMxb-Lz63UFrSN3jZuO03iWCGUJm5jKU2qxN1hiO8-FxBjsD83P72fn5-8B6NYQd008OxII2TwGqxPwctUFeVTXizzsprFagHbrIGX0IraDMT2hKzyssyLxSyOwFrFSHPQxmLXETpz5CqBHvLqUcRSwG0GA8Ye1-hckvuilaPeD-hZ9P6QgQ6-o36Kiknq1HvQVsWEDDVMnnQw8xEbIn0Ez8rtLCqDUVyHzDJk8I6RSV9bfhrao3W1x2HctSGegeBvYsl7jOeEL86EqXU_kn9EtYE5DHfEpabDjn93_ylyw12ARL7_DkTq7f0dlTSRLMvrEurTz2F0UxIvjUrjmzJGsqDmOOHh8AlfkMOb">spreadsheet</a>: letters as column headers and numbers as line headers, like in Excel.</li>
+            </ul>
+            <p> Each example is a shared link, it also brings its own style. </p>
 
             <hr>
             <h2> Your table </h2>
-            <p> Click to edit cell, Right click for options </p>
-            <div id='table-wrapper'>
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="active"><a href="#grid-tab" role="tab" data-toggle="tab">Grid</a></li>
+                <li><a href="#text-tab" role="tab" data-toggle="tab">Text</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="grid-tab">
+                    <p> Click to edit cell, Right click for options </p>
+                    <div id='table-wrapper'>
+                    </div>
+                    <p>
+                        <button type="button" class="btn btn-default btn-sm" onclick="clearTable();"><span class="glyphicon glyphicon-trash"></span> Clear the table</button>
+                    </p>
+                </div>
+                <div class="tab-pane" id="text-tab">
+                    <p> Paste a table produced by this tool to read it back into the grid. </p>
+                    <textarea id="text-input" class="form-control" rows="12" spellcheck="false"></textarea>
+                    <p>
+                        <button type="button" class="btn btn-default btn-sm" onclick="readTextInput();"><span class="glyphicon glyphicon-th"></span> Convert back to the grid</button>
+                        <button type="button" class="btn btn-default btn-sm" onclick="fillTextInput();"><span class="glyphicon glyphicon-arrow-up"></span> Fill with the table below</button>
+                        <button type="button" class="btn btn-default btn-sm" onclick="clearTextInput();"><span class="glyphicon glyphicon-trash"></span> Clear</button>
+                        <span id="text-input-feedback"></span>
+                    </p>
+                </div>
             </div>
             <br>
             <pre id="ptt-wrapper"></pre>
+            <p>
+                <button type="button" class="btn btn-default btn-sm" onclick="copyOutput();"><span class="glyphicon glyphicon-duplicate"></span> Copy to clipboard</button>
+                <button type="button" class="btn btn-default btn-sm" onclick="copyShareLink();"><span class="glyphicon glyphicon-share"></span> Copy link to this table</button>
+                <span id="copy-feedback"></span>
+            </p>
             <hr>
             <div id="configuration" class="col-md-6">
                 <p>Characters: <select id="charset" name="charset" onchange="charsetSelectChange(this);">
@@ -160,7 +196,7 @@
                         <p><a onClick="predefinedStyle('ascii1')"><img src="img/ascii1.png"></a><p>
                         <p><a onClick="predefinedStyle('ascii2')"><img src="img/ascii2.png"></a><p>
                         <p><a onClick="predefinedStyle('ascii3')"><img src="img/ascii3.png"></a><p>
-                        <p><a onClick="predefinedStyle('ascii4')"><img src="img/ascii4.png"></a><p>
+                        <p><a onClick="predefinedStyle('ascii4')" title="This style is the table syntax of Markdown"><img src="img/ascii4.png" alt="Markdown table syntax"><span class="label label-info">Markdown</span></a><p>
                         <p><a onClick="predefinedStyle('ascii5')"><img src="img/ascii5.png"></a><p>
                         <p><a onClick="predefinedStyle('ascii6')"><img src="img/ascii6.png"></a><p>
                     </div>
@@ -198,17 +234,8 @@
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/js/bootstrap.min.js"></script>
         <script src="//cdnjs.cloudflare.com/ajax/libs/handsontable/0.12.6/handsontable.full.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+        <script src="js/parser.js"></script>
         <script src="js/main.js"></script>
-
-        <!-- [TODO] Google Analytics: change UA-XXXXX-X to be your site's ID. -->
-        <script>
-          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-          })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-          ga('create', 'UA-47274059-1', 'lorefnon.me');
-          ga('send', 'pageview');
-        </script>
     </body>
 </html>

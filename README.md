@@ -4,7 +4,7 @@ Interactively create and edit tables and export them to plain text.
 
 ## Use the tool online
 
-Please visit : http://lorefnon.me/plain-text-table
+Please visit : https://jmini.github.io/plain-text-table/
 
 ## Features
 
@@ -14,7 +14,12 @@ Please visit : http://lorefnon.me/plain-text-table
 * Merged cell support (colspan and rowspan)
 * Multiline text in the cells
 * Text alignement support (horizontal and vertical)
-* Predefined style
+* Predefined style, including the table syntax of Markdown
+* Example tables to start from
+* Copy the output to the clipboard
+* Share the table (content, alignment and configuration) with a link
+* Read a plain text table back into the grid, style included (`Text` tab)
+* The table is kept in the browser and survives a reload
 
 All configuration options explained in the [user manual](user_manual/README.md).
 
@@ -49,9 +54,28 @@ Ascii characters with spreadsheet headers:
     | 3 | Carrie | Sheffield |   ?   |  42 |
     +===+========+===========+=======+=====+
 
+## Development
+
+The site is made of static files, serve the root of the repository with any web server:
+
+    python3 -m http.server 8777
+
+The parser reading a plain text table back into the grid (`js/parser.js`) is covered by unit tests.
+They need [node](https://nodejs.org/) (version 18 or later) and no other dependency:
+
+    node --test "test/*.test.js"
+
+More about the code in [implementation_details](implementation_details/README.md).
+The `test` and `implementation_details` folders are not published on GitHub Pages, see `_config.yml`.
+
 ## Get in touch / bug tracker
 
-Use the [plain-text-table issue tracker](http://github.com/lorefnon/plain-text-table/issues) on GitHub.
+Use the [plain-text-table issue tracker](https://github.com/jmini/plain-text-table/issues) on GitHub.
+
+## Credits
+
+This project is a fork of the original `plain-text-table` created in 2014 by [Lorefnon](https://github.com/lorefnon).
+The original repository and its website are no longer available, so this fork continues the work.
 
 ## License
 

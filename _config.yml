@@ -1,0 +1,5 @@
+# Configuration of the GitHub Pages site.
+# It only keeps out of what is published the folders that are not part of the site.
+exclude:
+  - test
+  - implementation_details
