@@ -14,6 +14,7 @@ JavaScript that can be covered by unit tests running in node. Keep it that way.
 {
   data: [["Alice", "Johnson"], ["Bob", "Smith"]],
   mergeCells: [{row: 0, col: 1, rowspan: 2, colspan: 1}],
+  alignments: {'0,1': 'htCenter'}, // only filled for a Markdown table, see below
   horizontalHeader: 'letter',   // or 'number', or null
   verticalHeader: 'number',     // or 'letter', or null
   configuration: {...},         // the style, with the ids of the selects as keys
@@ -41,6 +42,21 @@ JavaScript that can be covered by unit tests running in node. Keep it that way.
    them only, depending on its vertical alignment, which is why the empty ones have to go.
 7. **Generated headers** are removed from the content, see below.
 8. **The style** is read from the drawing, see below.
+
+## Markdown tables
+
+A Markdown table is written, not drawn: its pipes do not have to line up, and the line below the
+header can hold colons (`:---`, `:---:`, `---:`) that are not border characters. Read by position,
+such a table becomes a mess of merged cells. So when the second line is a Markdown delimiter row
+with as many cells as the header, the table is split on its pipes instead (`\|` is a pipe inside a
+cell), the colons become `htCenter` / `htRight` in the `alignments` of the result, and the
+configuration is the predefined Markdown style, with the outer borders the text has.
+
+This only happens when the drawing cannot read it: the delimiter row holds a colon, a line holds an
+escaped pipe `\|` (which the tool never writes, and which a drawing would take for a border), or a
+line has a pipe where the delimiter row has none. The Markdown output of the tool lines up, and keeps being
+read as a drawing, which is what recognizes its merged cells and its cells holding several lines.
+Markdown has no syntax for either.
 
 ## What cannot be read, and why
 

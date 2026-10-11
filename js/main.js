@@ -461,7 +461,7 @@ function readTextInput() {
     applyState({
         data: result.data,
         mergeCells: result.mergeCells,
-        alignments: {},
+        alignments: result.alignments,
         configuration: result.configuration
     });
     showTextInputFeedback(describeTable(result));

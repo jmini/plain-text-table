@@ -423,3 +423,102 @@ test('foreign table: no outer border and a header that does not line up', functi
     ]));
     assert.deepStrictEqual(result.mergeCells, []);
 });
+
+test('markdown table whose pipes do not line up', function() {
+    var result = parser.parse(table([
+        'Table Header-1 | Table Header-2 | Table Header-3',
+        ':--- | :---: | ---:',
+        'Table Data-1 | Table Data-2 | Table Data-3',
+        'TD-4 | Td-5 | TD-6',
+        'Table Data-7 | Table Data-8 | Table Data-9'
+    ]));
+    assert.strictEqual(result.error, null);
+    assert.deepStrictEqual(result.data, [
+        ['Table Header-1', 'Table Header-2', 'Table Header-3'],
+        ['Table Data-1', 'Table Data-2', 'Table Data-3'],
+        ['TD-4', 'Td-5', 'TD-6'],
+        ['Table Data-7', 'Table Data-8', 'Table Data-9']
+    ]);
+    assert.deepStrictEqual(result.mergeCells, []);
+    //':---' is the default alignment, only the two other columns are set:
+    assert.strictEqual(result.alignments['0,0'], undefined);
+    assert.strictEqual(result.alignments['0,1'], 'htCenter');
+    assert.strictEqual(result.alignments['3,1'], 'htCenter');
+    assert.strictEqual(result.alignments['0,2'], 'htRight');
+    assert.strictEqual(result.alignments['3,2'], 'htRight');
+    var c = result.configuration;
+    assert.strictEqual(c.charset, 'ascii');
+    assert.strictEqual(c.horizontal_header, 'first_line');
+    assert.strictEqual(c.horizontal_inner_header_border, 'single');
+    assert.strictEqual(c.vertical_left_border, 'none');
+    assert.strictEqual(c.vertical_inner_border, 'single');
+    assert.strictEqual(c.vertical_right_border, 'none');
+    assert.strictEqual(c.ascii_intersection, 'vertical_border');
+});
+
+test('markdown table that lines up but sets alignments with colons', function() {
+    var result = parser.parse(table([
+        '| Name      | Count |',
+        '|:----------|------:|',
+        '| Sheffield | 347   |'
+    ]));
+    assert.deepStrictEqual(result.data, [
+        ['Name', 'Count'],
+        ['Sheffield', '347']
+    ]);
+    assert.strictEqual(result.alignments['1,1'], 'htRight');
+    assert.strictEqual(result.configuration.vertical_left_border, 'single');
+    assert.strictEqual(result.configuration.vertical_right_border, 'single');
+});
+
+test('markdown table: escaped pipes, missing and extra cells', function() {
+    var result = parser.parse(table([
+        '| Operator | Meaning |',
+        '|---|---|',
+        '| `a \\| b` | or |',
+        '| alone |',
+        '| x | y | z |'
+    ]));
+    assert.deepStrictEqual(result.data, [
+        ['Operator', 'Meaning', ''],
+        ['`a | b`', 'or', ''],
+        ['alone', '', ''],
+        ['x', 'y', 'z']
+    ]);
+    assert.deepStrictEqual(result.alignments, {});
+});
+
+test('markdown output of the tool with a merged cell is still read as a drawing', function() {
+    var result = parser.parse(table([
+        '| Name      | First Name |',
+        '|-----------|------------|',
+        '| Sheffield | Alice      |',
+        '| Merged over both       |'
+    ]));
+    assert.deepStrictEqual(result.data, [
+        ['Name', 'First Name'],
+        ['Sheffield', 'Alice'],
+        ['Merged over both', '']
+    ]);
+    assert.deepStrictEqual(result.mergeCells, [{
+        row: 2,
+        col: 0,
+        rowspan: 1,
+        colspan: 2
+    }]);
+});
+
+test('markdown table that lines up and holds an escaped pipe', function() {
+    var result = parser.parse(table([
+        '| Name     | Character |',
+        '| ---      | ---       |',
+        '| Backtick | `         |',
+        '| Pipe     | \\|        |'
+    ]));
+    assert.deepStrictEqual(result.data, [
+        ['Name', 'Character'],
+        ['Backtick', '`'],
+        ['Pipe', '|']
+    ]);
+    assert.deepStrictEqual(result.mergeCells, []);
+});

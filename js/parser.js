@@ -653,9 +653,171 @@
         };
     }
 
+    //--- Markdown tables -----------------------------------------------------------------
+
+    //A Markdown table is not drawn, it is written: the pipes of its lines do not have to
+    //line up, and the line below the header can hold colons setting the alignment of a
+    //column. Reading it by character position fails, so it is split on the pipes instead.
+
+    //the positions of the pipes of a line, '\|' being a pipe written inside a cell:
+    function pipePositions(line) {
+        var i;
+        var positions = [];
+        for (i = 0; i < line.length; i++) {
+            if ('\\' === line.charAt(i)) {
+                i++;
+            } else if ('|' === line.charAt(i)) {
+                positions.push(i);
+            }
+        }
+        return positions;
+    }
+
+    //the cells of a line, without the optional pipes at both ends:
+    function markdownCells(line) {
+        var i, c;
+        var cells = [];
+        var current = '';
+        var text = line.trim();
+        if ('|' === text.charAt(0)) {
+            text = text.substring(1);
+        }
+        if ('|' === text.charAt(text.length - 1) && '\\' !== text.charAt(text.length - 2)) {
+            text = text.substring(0, text.length - 1);
+        }
+        for (i = 0; i < text.length; i++) {
+            c = text.charAt(i);
+            if ('\\' === c && '|' === text.charAt(i + 1)) {
+                current += '|';
+                i++;
+            } else if ('|' === c) {
+                cells.push(current.trim());
+                current = '';
+            } else {
+                current += c;
+            }
+        }
+        cells.push(current.trim());
+        return cells;
+    }
+
+    //the line below the header: '---', ':---', '---:' or ':---:' between pipes.
+    //The pipe is required, otherwise any line of dashes would qualify:
+    function isMarkdownDelimiter(line) {
+        var i;
+        if (pipePositions(line).length === 0) {
+            return false;
+        }
+        var cells = markdownCells(line);
+        for (i = 0; i < cells.length; i++) {
+            if (!/^:?-+:?$/.test(cells[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //Only a Markdown table that the drawing cannot read is split on its pipes. The output
+    //of the tool, where every pipe sits under a pipe of the line below the header, keeps
+    //being read as a drawing: that is what recognizes its merged cells and its cells taking
+    //several lines, which Markdown has no syntax for.
+    function isWrittenMarkdown(lines) {
+        var i, j, positions;
+        if (lines.length < 2 || !isMarkdownDelimiter(lines[1]) ||
+            markdownCells(lines[0]).length !== markdownCells(lines[1]).length) {
+            return false;
+        }
+        if (lines[1].indexOf(':') > -1) {
+            return true;
+        }
+        //the tool never escapes a pipe, read by position '\|' would be a border:
+        for (i = 0; i < lines.length; i++) {
+            if (lines[i].indexOf('\\|') > -1) {
+                return true;
+            }
+        }
+        var delimiter = {};
+        positions = pipePositions(lines[1]);
+        for (j = 0; j < positions.length; j++) {
+            delimiter[positions[j]] = true;
+        }
+        for (i = 0; i < lines.length; i++) {
+            positions = pipePositions(lines[i]);
+            for (j = 0; j < positions.length; j++) {
+                if (!delimiter[positions[j]]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function parseMarkdown(lines) {
+        var i, j, cells, align;
+        var header = markdownCells(lines[0]);
+        var delimiter = markdownCells(lines[1]);
+        var data = [header];
+        var width = header.length;
+        for (i = 2; i < lines.length; i++) {
+            cells = markdownCells(lines[i]);
+            width = Math.max(width, cells.length);
+            data.push(cells);
+        }
+        //a line holding fewer cells than the others is completed, one holding more widens
+        //the table rather than losing its text:
+        for (i = 0; i < data.length; i++) {
+            while (data[i].length < width) {
+                data[i].push('');
+            }
+        }
+        var alignments = {};
+        for (j = 0; j < delimiter.length; j++) {
+            align = null;
+            if (':' === delimiter[j].charAt(delimiter[j].length - 1)) {
+                align = ':' === delimiter[j].charAt(0) ? 'htCenter' : 'htRight';
+            }
+            if (align) {
+                for (i = 0; i < data.length; i++) {
+                    alignments[i + ',' + j] = align;
+                }
+            }
+        }
+        var trimmed = lines[0].trim();
+        var outer = '|' === trimmed.charAt(0) ? 'single' : 'none';
+        var outerRight = '|' === trimmed.charAt(trimmed.length - 1) ? 'single' : 'none';
+        return {
+            data: data,
+            mergeCells: [],
+            alignments: alignments,
+            horizontalHeader: null,
+            verticalHeader: null,
+            //the predefined Markdown style, keeping the outer borders the text has or not:
+            configuration: {
+                charset: 'ascii',
+                horizontal_header: 'first_line',
+                vertical_header: 'none',
+                horizontal_top_border: 'none',
+                horizontal_inner_header_border: 'single',
+                horizontal_inner_border: 'none',
+                horizontal_bottom_border: 'none',
+                vertical_left_border: outer,
+                vertical_inner_header_border: 'single',
+                vertical_inner_border: 'single',
+                vertical_right_border: outerRight,
+                ascii_intersection: 'vertical_border',
+                spacePadding: true
+            },
+            error: null
+        };
+    }
+
     function parse(text) {
         var r, c, span, cell, anchor, key;
-        var lines = alignLines(splitLines(text || ''));
+        var written = splitLines(text || '');
+        if (isWrittenMarkdown(written)) {
+            return parseMarkdown(written);
+        }
+        var lines = alignLines(written);
         var boundaries = findBoundaries(lines);
         var columns = findColumns(lines, boundaries);
         var rows = findRows(lines, columns);
@@ -664,6 +826,7 @@
             return {
                 data: [],
                 mergeCells: [],
+                alignments: {},
                 horizontalHeader: null,
                 verticalHeader: null,
                 configuration: null,
@@ -764,6 +927,7 @@
         return {
             data: data,
             mergeCells: mergeCells,
+            alignments: {},
             horizontalHeader: headers.horizontalHeader,
             verticalHeader: headers.verticalHeader,
             configuration: configuration,
